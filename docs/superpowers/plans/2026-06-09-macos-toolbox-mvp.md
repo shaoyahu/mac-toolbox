@@ -92,15 +92,15 @@
 
 ## 里程碑 2：应用导航和基础 UI
 
-- [ ] 创建 `apps/desktop/src/app/navigation.ts`，包含 section id：`dashboard`、`traffic`、`rules`、`settings`。
-- [ ] 添加导航单元测试，验证 section 顺序。
-- [ ] 用导航模型渲染侧边栏，替换硬编码按钮。
-- [ ] 在 `App.tsx` 中添加当前选中页面状态。
-- [ ] 为非仪表盘页面添加临时内容。
-- [ ] 添加小窗口下的响应式布局 CSS。
-- [ ] 运行 `pnpm --filter desktop test`。
-- [ ] 运行 `pnpm build`。
-- [ ] 提交：`feat: add app navigation`。
+- [x] 创建 `apps/desktop/src/app/navigation.ts`，包含 section id：`dashboard`、`traffic`、`rules`、`settings`。
+- [x] 添加导航单元测试，验证 section 顺序。
+- [x] 用导航模型渲染侧边栏，替换硬编码按钮。
+- [x] 在 `App.tsx` 中添加当前选中页面状态。
+- [x] 为非仪表盘页面添加临时内容。
+- [x] 添加小窗口下的响应式布局 CSS。
+- [x] 运行 `pnpm --filter desktop test`。
+- [x] 运行 `pnpm build`。
+- [x] 提交：`feat: add app navigation`。
 
 验收标准：
 
