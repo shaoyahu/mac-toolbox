@@ -110,16 +110,16 @@
 
 ## 里程碑 3：本机信息后端
 
-- [ ] 创建 `crates/system-info/Cargo.toml`。
-- [ ] 创建 `crates/system-info/src/lib.rs`。
-- [ ] 定义 `SystemSnapshot`，包含 OS 名称、OS 版本、kernel 版本、host 名、CPU 名称、CPU 核心数、总内存、已用内存、磁盘容量、可用磁盘、网络接口数量。
-- [ ] 实现 `collect_system_snapshot()`。
-- [ ] 添加 Rust 测试，证明 CPU 核心数、内存、OS 名称已填充。
-- [ ] 把 `system-info` 加为 `apps/desktop/src-tauri` 的依赖。
-- [ ] 暴露 `system_snapshot` Tauri 命令。
-- [ ] 运行 `cargo test -p system-info`。
-- [ ] 运行 `cargo check --workspace`。
-- [ ] 提交：`feat: add system information backend`。
+- [x] 创建 `crates/system-info/Cargo.toml`。
+- [x] 创建 `crates/system-info/src/lib.rs`。
+- [x] 定义 `SystemSnapshot`，包含 OS 名称、OS 版本、kernel 版本、host 名、CPU 名称、CPU 核心数、总内存、已用内存、磁盘容量、可用磁盘、网络接口数量。
+- [x] 实现 `collect_system_snapshot()`。
+- [x] 添加 Rust 测试，证明 CPU 核心数、内存、OS 名称已填充。
+- [x] 把 `system-info` 加为 `apps/desktop/src-tauri` 的依赖。
+- [x] 暴露 `system_snapshot` Tauri 命令。
+- [x] 运行 `cargo test -p system-info`。
+- [x] 运行 `cargo check --workspace`。
+- [x] 提交：`feat: add system information backend`。
 
 验收标准：
 
