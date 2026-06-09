@@ -129,16 +129,16 @@
 
 ## 里程碑 4：本机信息仪表盘
 
-- [ ] 创建 `apps/desktop/src/lib/systemInfo.ts`，包含前端类型、DTO 映射、`loadSystemSnapshot()`、字节格式化。
-- [ ] 创建 `apps/desktop/src/features/dashboard/SystemDashboard.tsx`。
-- [ ] 添加仪表盘卡片渲染测试。
-- [ ] 在 `App.tsx` 中接入仪表盘加载流程。
-- [ ] 添加加载态和错误态。
-- [ ] 添加仪表盘卡片样式。
-- [ ] 运行 `pnpm --filter desktop test`。
-- [ ] 运行 `pnpm build`。
-- [ ] 运行应用，视觉确认仪表盘数据出现。
-- [ ] 提交：`feat: add system dashboard`。
+- [x] 创建 `apps/desktop/src/lib/systemInfo.ts`，包含前端类型、DTO 映射、`loadSystemSnapshot()`、字节格式化。
+- [x] 创建 `apps/desktop/src/features/dashboard/SystemDashboard.tsx`。
+- [x] 添加仪表盘卡片渲染测试。
+- [x] 在 `App.tsx` 中接入仪表盘加载流程。
+- [x] 添加加载态和错误态。
+- [x] 添加仪表盘卡片样式。
+- [x] 运行 `pnpm --filter desktop test`。
+- [x] 运行 `pnpm build`。
+- [x] 运行应用，视觉确认仪表盘数据出现。
+- [x] 提交：`feat: add system dashboard`。
 
 验收标准：
 

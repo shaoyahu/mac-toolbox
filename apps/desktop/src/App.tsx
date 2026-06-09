@@ -1,7 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SectionId, sections } from "./app/navigation";
+import { SystemDashboard } from "./features/dashboard/SystemDashboard";
+import { loadSystemSnapshot, SystemSnapshot } from "./lib/systemInfo";
 
-function PageContent({ sectionId }: { sectionId: SectionId }) {
+type SnapshotState =
+  | { status: "loading" }
+  | { status: "ready"; snapshot: SystemSnapshot }
+  | { status: "error"; message: string };
+
+function PageContent({
+  sectionId,
+  snapshotState,
+}: {
+  sectionId: SectionId;
+  snapshotState: SnapshotState;
+}) {
   const section = sections.find((item) => item.id === sectionId) ?? sections[0];
 
   return (
@@ -10,23 +23,7 @@ function PageContent({ sectionId }: { sectionId: SectionId }) {
       <h1 id="app-title">{section.title}</h1>
       <p className="lede">{section.description}</p>
       {section.id === "dashboard" ? (
-        <div className="placeholder-grid" aria-label="MVP capabilities">
-          <article>
-            <span>01</span>
-            <h2>System snapshot</h2>
-            <p>Read-only host, OS, CPU, memory, disk, and network details.</p>
-          </article>
-          <article>
-            <span>02</span>
-            <h2>Manual local proxy</h2>
-            <p>Start a loopback proxy and capture conservative HTTP metadata.</p>
-          </article>
-          <article>
-            <span>03</span>
-            <h2>Header rules</h2>
-            <p>Add, replace, or remove request headers for matching traffic.</p>
-          </article>
-        </div>
+        <DashboardState state={snapshotState} />
       ) : (
         <div className="empty-state">
           <span>{section.label}</span>
@@ -37,8 +34,50 @@ function PageContent({ sectionId }: { sectionId: SectionId }) {
   );
 }
 
+function DashboardState({ state }: { state: SnapshotState }) {
+  if (state.status === "loading") {
+    return <div className="status-panel">Loading system snapshot...</div>;
+  }
+
+  if (state.status === "error") {
+    return (
+      <div className="status-panel status-panel-error">
+        Failed to load system snapshot: {state.message}
+      </div>
+    );
+  }
+
+  return <SystemDashboard snapshot={state.snapshot} />;
+}
+
 export function App() {
   const [activeSection, setActiveSection] = useState<SectionId>("dashboard");
+  const [snapshotState, setSnapshotState] = useState<SnapshotState>({
+    status: "loading",
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadSystemSnapshot()
+      .then((snapshot) => {
+        if (!cancelled) {
+          setSnapshotState({ status: "ready", snapshot });
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setSnapshotState({
+            status: "error",
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <main className="app-shell">
@@ -69,7 +108,7 @@ export function App() {
         </nav>
       </aside>
 
-      <PageContent sectionId={activeSection} />
+      <PageContent sectionId={activeSection} snapshotState={snapshotState} />
     </main>
   );
 }
