@@ -285,15 +285,15 @@
 
 ## 里程碑 11：安全与引导文档
 
-- [ ] 创建 `docs/security/local-proxy.md`。
-- [ ] 文档说明代理默认捕获什么。
-- [ ] 文档说明 MVP 不捕获什么。
-- [ ] 文档说明 HTTPS `CONNECT` 元数据行为。
-- [ ] 文档说明 HTTPS 请求体解密尚未实现。
-- [ ] 文档说明请求头改写只影响经过本地代理的流量。
-- [ ] 创建首次运行 UI 文案，解释如何手动配置代理。
-- [ ] 在流量 UI 中添加指向代理说明的链接或帮助面板。
-- [ ] 提交：`docs: document proxy privacy model`。
+- [x] 创建 `docs/security/local-proxy.md`。
+- [x] 文档说明代理默认捕获什么。
+- [x] 文档说明 MVP 不捕获什么。
+- [x] 文档说明 HTTPS `CONNECT` 元数据行为。
+- [x] 文档说明 HTTPS 请求体解密尚未实现。
+- [x] 文档说明请求头改写只影响经过本地代理的流量。
+- [x] 创建首次运行 UI 文案，解释如何手动配置代理。
+- [x] 在流量 UI 中添加指向代理说明的链接或帮助面板。
+- [x] 提交：`docs: document proxy privacy model`。
 
 验收标准：
 

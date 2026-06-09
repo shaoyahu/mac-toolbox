@@ -18,6 +18,11 @@ export function ProxyControls({
       <div>
         <span className={status.running ? "status-dot is-running" : "status-dot"} />
         {status.running ? `Proxy running at ${status.bindAddr}` : "Proxy stopped"}
+        <p className="proxy-help">
+          Manually configure your browser HTTP proxy to{" "}
+          <strong>{status.bindAddr ?? "127.0.0.1:9090"}</strong>. HTTPS CONNECT
+          is recorded as tunnel metadata only.
+        </p>
       </div>
       <div className="toolbar-actions">
         {status.running ? (

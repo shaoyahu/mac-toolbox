@@ -283,6 +283,13 @@ h1 {
   background: #548257;
 }
 
+.proxy-help {
+  max-width: 42rem;
+  margin: 0.45rem 0 0;
+  color: #5c6a59;
+  line-height: 1.45;
+}
+
 .toolbar-actions {
   display: flex;
   gap: 0.6rem;
