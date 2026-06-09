@@ -212,22 +212,22 @@
 
 ## 里程碑 8：流量 UI
 
-- [ ] 创建 `apps/desktop/src/lib/proxyApi.ts`，包含类型化 Tauri client 函数。
-- [ ] 创建 `apps/desktop/src/features/traffic/TrafficView.tsx`。
-- [ ] 创建 `apps/desktop/src/features/traffic/ProxyControls.tsx`。
-- [ ] 创建 `apps/desktop/src/features/traffic/TrafficTable.tsx`。
-- [ ] 创建 `apps/desktop/src/features/traffic/TrafficDetail.tsx`。
-- [ ] 添加空流量状态渲染测试。
-- [ ] 添加测试覆盖选中一行流量并展示详情。
-- [ ] 添加启动/停止代理按钮。
-- [ ] 添加清空流量按钮。
-- [ ] 添加按 host、method、URL 搜索/过滤。
-- [ ] 订阅后端 traffic event。
-- [ ] 将流量页面接入 `App.tsx`。
-- [ ] 运行 `pnpm --filter desktop test`。
-- [ ] 运行 `pnpm build`。
-- [ ] 手动运行应用，配置浏览器代理，验证请求行出现。
-- [ ] 提交：`feat: add traffic capture UI`。
+- [x] 创建 `apps/desktop/src/lib/proxyApi.ts`，包含类型化 Tauri client 函数。
+- [x] 创建 `apps/desktop/src/features/traffic/TrafficView.tsx`。
+- [x] 创建 `apps/desktop/src/features/traffic/ProxyControls.tsx`。
+- [x] 创建 `apps/desktop/src/features/traffic/TrafficTable.tsx`。
+- [x] 创建 `apps/desktop/src/features/traffic/TrafficDetail.tsx`。
+- [x] 添加空流量状态渲染测试。
+- [x] 添加测试覆盖选中一行流量并展示详情。
+- [x] 添加启动/停止代理按钮。
+- [x] 添加清空流量按钮。
+- [x] 添加按 host、method、URL 搜索/过滤。
+- [x] 订阅后端 traffic event。
+- [x] 将流量页面接入 `App.tsx`。
+- [x] 运行 `pnpm --filter desktop test`。
+- [x] 运行 `pnpm build`。
+- [x] 手动运行应用，配置浏览器代理，验证请求行出现。
+- [x] 提交：`feat: add traffic capture UI`。
 
 验收标准：
 

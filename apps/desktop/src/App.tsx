@@ -1,7 +1,18 @@
 import { useEffect, useState } from "react";
 import { SectionId, sections } from "./app/navigation";
 import { SystemDashboard } from "./features/dashboard/SystemDashboard";
+import { TrafficView } from "./features/traffic/TrafficView";
 import { loadSystemSnapshot, SystemSnapshot } from "./lib/systemInfo";
+import {
+  clearTraffic,
+  listTraffic,
+  onTrafficEntry,
+  proxyStatus,
+  ProxyStatus,
+  startProxy,
+  stopProxy,
+  TrafficEntry,
+} from "./lib/proxyApi";
 
 type SnapshotState =
   | { status: "loading" }
@@ -11,9 +22,19 @@ type SnapshotState =
 function PageContent({
   sectionId,
   snapshotState,
+  trafficEntries,
+  proxyState,
+  onStartProxy,
+  onStopProxy,
+  onClearTraffic,
 }: {
   sectionId: SectionId;
   snapshotState: SnapshotState;
+  trafficEntries: TrafficEntry[];
+  proxyState: ProxyStatus;
+  onStartProxy: () => void;
+  onStopProxy: () => void;
+  onClearTraffic: () => void;
 }) {
   const section = sections.find((item) => item.id === sectionId) ?? sections[0];
 
@@ -22,9 +43,17 @@ function PageContent({
       <p className="section-label">Version 0.1</p>
       <h1 id="app-title">{section.title}</h1>
       <p className="lede">{section.description}</p>
-      {section.id === "dashboard" ? (
-        <DashboardState state={snapshotState} />
-      ) : (
+      {section.id === "dashboard" && <DashboardState state={snapshotState} />}
+      {section.id === "traffic" && (
+        <TrafficView
+          entries={trafficEntries}
+          status={proxyState}
+          onStart={onStartProxy}
+          onStop={onStopProxy}
+          onClear={onClearTraffic}
+        />
+      )}
+      {section.id !== "dashboard" && section.id !== "traffic" && (
         <div className="empty-state">
           <span>{section.label}</span>
           <p>This workspace is ready for the next MVP milestone.</p>
@@ -55,6 +84,12 @@ export function App() {
   const [snapshotState, setSnapshotState] = useState<SnapshotState>({
     status: "loading",
   });
+  const [proxyState, setProxyState] = useState<ProxyStatus>({
+    running: false,
+    bindAddr: null,
+    port: null,
+  });
+  const [trafficEntries, setTrafficEntries] = useState<TrafficEntry[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +113,40 @@ export function App() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    proxyStatus().then(setProxyState).catch(() => undefined);
+    listTraffic().then(setTrafficEntries).catch(() => undefined);
+
+    let unlisten: (() => void) | undefined;
+    onTrafficEntry((entry) => {
+      setTrafficEntries((entries) => {
+        if (entries.some((existing) => existing.id === entry.id)) {
+          return entries;
+        }
+        return [...entries, entry];
+      });
+    }).then((cleanup) => {
+      unlisten = cleanup;
+    });
+
+    return () => {
+      unlisten?.();
+    };
+  }, []);
+
+  async function handleStartProxy() {
+    setProxyState(await startProxy(9090));
+  }
+
+  async function handleStopProxy() {
+    setProxyState(await stopProxy());
+  }
+
+  async function handleClearTraffic() {
+    await clearTraffic();
+    setTrafficEntries([]);
+  }
 
   return (
     <main className="app-shell">
@@ -108,7 +177,15 @@ export function App() {
         </nav>
       </aside>
 
-      <PageContent sectionId={activeSection} snapshotState={snapshotState} />
+      <PageContent
+        sectionId={activeSection}
+        snapshotState={snapshotState}
+        trafficEntries={trafficEntries}
+        proxyState={proxyState}
+        onStartProxy={handleStartProxy}
+        onStopProxy={handleStopProxy}
+        onClearTraffic={handleClearTraffic}
+      />
     </main>
   );
 }
