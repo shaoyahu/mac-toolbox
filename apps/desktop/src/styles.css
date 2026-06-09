@@ -485,6 +485,59 @@ button.traffic-row:hover {
   gap: 0.5rem;
 }
 
+.settings-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 42rem;
+  margin-top: clamp(2rem, 6vw, 4rem);
+  border: 1px solid rgba(37, 54, 42, 0.1);
+  border-radius: 1.2rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.settings-form label {
+  display: grid;
+  gap: 0.4rem;
+  color: #667361;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.settings-form input {
+  border: 1px solid rgba(37, 54, 42, 0.16);
+  border-radius: 0.85rem;
+  padding: 0.75rem;
+  color: #17201b;
+  background: rgba(255, 255, 255, 0.72);
+  font: inherit;
+  letter-spacing: 0;
+}
+
+.settings-form button {
+  justify-self: start;
+  border: 0;
+  border-radius: 0.8rem;
+  padding: 0.7rem 0.9rem;
+  color: #f8f5e8;
+  background: #25362a;
+  cursor: pointer;
+}
+
+.privacy-note {
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(37, 54, 42, 0.08);
+}
+
+.privacy-note p {
+  margin: 0.4rem 0 0;
+  color: #5c6a59;
+  line-height: 1.55;
+}
+
 @media (max-width: 760px) {
   .app-shell {
     grid-template-columns: 1fr;

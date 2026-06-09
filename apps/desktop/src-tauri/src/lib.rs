@@ -1,24 +1,42 @@
-use std::{net::SocketAddr, time::Duration};
+use std::{fs, net::SocketAddr, path::Path, time::Duration};
 
 use proxy_core::{
     proxy::{start_proxy as start_proxy_server, ProxyConfig, ProxyHandle, TrafficStore},
     rules::{HeaderRule, RuleSet},
     traffic::TrafficEntry,
 };
-use serde::Serialize;
-use tauri::{AppHandle, Emitter, State};
+use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Emitter, Manager, State};
 use tokio::{sync::Mutex, task::JoinHandle};
 
 #[derive(Default)]
 struct BackendState {
     proxy: Mutex<Option<RunningProxy>>,
-    rules: Mutex<Vec<HeaderRule>>,
-    traffic_limit: Mutex<usize>,
+    config: Mutex<AppConfig>,
+    config_path: Mutex<Option<std::path::PathBuf>>,
 }
 
 struct RunningProxy {
     handle: ProxyHandle,
     event_task: JoinHandle<()>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+struct AppConfig {
+    proxy_port: u16,
+    traffic_limit: usize,
+    rules: Vec<HeaderRule>,
+}
+
+impl Default for AppConfig {
+    fn default() -> Self {
+        Self {
+            proxy_port: 9090,
+            traffic_limit: 500,
+            rules: Vec::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -27,6 +45,13 @@ struct ProxyStatus {
     running: bool,
     bind_addr: Option<String>,
     port: Option<u16>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+struct SettingsSnapshot {
+    proxy_port: u16,
+    traffic_limit: usize,
 }
 
 #[tauri::command]
@@ -56,12 +81,11 @@ async fn start_proxy(
         return Ok(proxy_status_from_guard(&proxy));
     }
 
-    let rules = state.rules.lock().await.clone();
-    let max_entries = *state.traffic_limit.lock().await;
+    let config = state.config.lock().await.clone();
     let handle = start_proxy_server(ProxyConfig {
         bind_port: port,
-        max_entries,
-        rules: RuleSet::new(rules),
+        max_entries: config.traffic_limit,
+        rules: RuleSet::new(config.rules),
     })
     .await
     .map_err(|error| error.to_string())?;
@@ -102,7 +126,7 @@ async fn clear_traffic(state: State<'_, BackendState>) -> Result<(), String> {
 
 #[tauri::command]
 async fn list_rules(state: State<'_, BackendState>) -> Result<Vec<HeaderRule>, String> {
-    Ok(state.rules.lock().await.clone())
+    Ok(state.config.lock().await.rules.clone())
 }
 
 #[tauri::command]
@@ -110,13 +134,14 @@ async fn save_rule(
     state: State<'_, BackendState>,
     rule: HeaderRule,
 ) -> Result<Vec<HeaderRule>, String> {
-    let mut rules = state.rules.lock().await;
-    if let Some(existing) = rules.iter_mut().find(|item| item.id == rule.id) {
+    let mut config = state.config.lock().await;
+    if let Some(existing) = config.rules.iter_mut().find(|item| item.id == rule.id) {
         *existing = rule;
     } else {
-        rules.push(rule);
+        config.rules.push(rule);
     }
-    Ok(rules.clone())
+    persist_config_state(&state, &config)?;
+    Ok(config.rules.clone())
 }
 
 #[tauri::command]
@@ -124,9 +149,10 @@ async fn delete_rule(
     state: State<'_, BackendState>,
     rule_id: String,
 ) -> Result<Vec<HeaderRule>, String> {
-    let mut rules = state.rules.lock().await;
-    rules.retain(|rule| rule.id != rule_id);
-    Ok(rules.clone())
+    let mut config = state.config.lock().await;
+    config.rules.retain(|rule| rule.id != rule_id);
+    persist_config_state(&state, &config)?;
+    Ok(config.rules.clone())
 }
 
 #[tauri::command]
@@ -135,11 +161,34 @@ async fn toggle_rule(
     rule_id: String,
     enabled: bool,
 ) -> Result<Vec<HeaderRule>, String> {
-    let mut rules = state.rules.lock().await;
-    if let Some(rule) = rules.iter_mut().find(|rule| rule.id == rule_id) {
+    let mut config = state.config.lock().await;
+    if let Some(rule) = config.rules.iter_mut().find(|rule| rule.id == rule_id) {
         rule.enabled = enabled;
     }
-    Ok(rules.clone())
+    persist_config_state(&state, &config)?;
+    Ok(config.rules.clone())
+}
+
+#[tauri::command]
+async fn get_settings(state: State<'_, BackendState>) -> Result<SettingsSnapshot, String> {
+    let config = state.config.lock().await;
+    Ok(SettingsSnapshot {
+        proxy_port: config.proxy_port,
+        traffic_limit: config.traffic_limit,
+    })
+}
+
+#[tauri::command]
+async fn save_settings(
+    state: State<'_, BackendState>,
+    settings: SettingsSnapshot,
+) -> Result<SettingsSnapshot, String> {
+    validate_settings(settings.proxy_port, settings.traffic_limit)?;
+    let mut config = state.config.lock().await;
+    config.proxy_port = settings.proxy_port;
+    config.traffic_limit = settings.traffic_limit;
+    persist_config_state(&state, &config)?;
+    Ok(settings)
 }
 
 fn proxy_status_from_guard(proxy: &Option<RunningProxy>) -> ProxyStatus {
@@ -175,13 +224,54 @@ fn spawn_traffic_event_task(app: AppHandle, store: TrafficStore) -> JoinHandle<(
     })
 }
 
+fn validate_settings(proxy_port: u16, traffic_limit: usize) -> Result<(), String> {
+    if proxy_port == 0 {
+        return Err("Proxy port must be between 1 and 65535.".to_string());
+    }
+    if !(10..=10_000).contains(&traffic_limit) {
+        return Err("Traffic retention must be between 10 and 10000.".to_string());
+    }
+    Ok(())
+}
+
+fn load_config_from_path(path: &Path) -> AppConfig {
+    fs::read_to_string(path)
+        .ok()
+        .and_then(|content| serde_json::from_str(&content).ok())
+        .unwrap_or_default()
+}
+
+fn save_config_to_path(path: &Path, config: &AppConfig) -> Result<(), String> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+    let content = serde_json::to_string_pretty(config).map_err(|error| error.to_string())?;
+    fs::write(path, content).map_err(|error| error.to_string())
+}
+
+fn persist_config_state(state: &State<'_, BackendState>, config: &AppConfig) -> Result<(), String> {
+    let Some(path) = state.config_path.blocking_lock().clone() else {
+        return Ok(());
+    };
+    save_config_to_path(&path, config)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .manage(BackendState {
-            proxy: Mutex::new(None),
-            rules: Mutex::new(Vec::new()),
-            traffic_limit: Mutex::new(500),
+        .setup(|app| {
+            let config_path = app
+                .path()
+                .app_data_dir()
+                .map_err(|error| Box::<dyn std::error::Error>::from(error))?
+                .join("config.json");
+            let config = load_config_from_path(&config_path);
+            app.manage(BackendState {
+                proxy: Mutex::new(None),
+                config: Mutex::new(config),
+                config_path: Mutex::new(Some(config_path)),
+            });
+            Ok(())
         })
         .invoke_handler(tauri::generate_handler![
             app_version,
@@ -194,7 +284,9 @@ pub fn run() {
             list_rules,
             save_rule,
             delete_rule,
-            toggle_rule
+            toggle_rule,
+            get_settings,
+            save_settings
         ])
         .run(tauri::generate_context!())
         .expect("failed to run macOS Toolbox");
@@ -202,7 +294,10 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
-    use super::{proxy_status_from_addr, proxy_status_from_guard};
+    use super::{
+        load_config_from_path, proxy_status_from_addr, proxy_status_from_guard,
+        save_config_to_path, validate_settings, AppConfig,
+    };
 
     #[test]
     fn proxy_status_reports_stopped_without_address() {
@@ -221,5 +316,29 @@ mod tests {
         assert!(status.running);
         assert_eq!(status.bind_addr, Some("127.0.0.1:1421".to_string()));
         assert_eq!(status.port, Some(1421));
+    }
+
+    #[test]
+    fn validates_settings_bounds() {
+        assert!(validate_settings(9090, 500).is_ok());
+        assert!(validate_settings(0, 500).is_err());
+        assert!(validate_settings(9090, 5).is_err());
+    }
+
+    #[test]
+    fn saves_and_loads_config() {
+        let path = std::env::temp_dir().join(format!(
+            "macos-toolbox-config-{}.json",
+            std::process::id()
+        ));
+        let config = AppConfig {
+            proxy_port: 8080,
+            traffic_limit: 250,
+            rules: Vec::new(),
+        };
+
+        save_config_to_path(&path, &config).unwrap();
+        assert_eq!(load_config_from_path(&path), config);
+        let _ = std::fs::remove_file(path);
     }
 }

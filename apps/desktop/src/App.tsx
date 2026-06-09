@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { SectionId, sections } from "./app/navigation";
 import { SystemDashboard } from "./features/dashboard/SystemDashboard";
 import { RulesView } from "./features/rules/RulesView";
+import { SettingsView } from "./features/settings/SettingsView";
 import { TrafficView } from "./features/traffic/TrafficView";
 import { loadSystemSnapshot, SystemSnapshot } from "./lib/systemInfo";
 import {
@@ -21,6 +22,11 @@ import {
   saveRule,
   toggleRule,
 } from "./lib/rulesApi";
+import {
+  getSettings,
+  saveSettings,
+  SettingsSnapshot,
+} from "./lib/settingsApi";
 
 type SnapshotState =
   | { status: "loading" }
@@ -39,6 +45,8 @@ function PageContent({
   onSaveRule,
   onDeleteRule,
   onToggleRule,
+  settings,
+  onSaveSettings,
 }: {
   sectionId: SectionId;
   snapshotState: SnapshotState;
@@ -51,6 +59,8 @@ function PageContent({
   onSaveRule: (rule: HeaderRule) => void;
   onDeleteRule: (ruleId: string) => void;
   onToggleRule: (ruleId: string, enabled: boolean) => void;
+  settings: SettingsSnapshot;
+  onSaveSettings: (settings: SettingsSnapshot) => void;
 }) {
   const section = sections.find((item) => item.id === sectionId) ?? sections[0];
 
@@ -78,11 +88,8 @@ function PageContent({
           onToggle={onToggleRule}
         />
       )}
-      {section.id !== "dashboard" && section.id !== "traffic" && section.id !== "rules" && (
-        <div className="empty-state">
-          <span>{section.label}</span>
-          <p>This workspace is ready for the next MVP milestone.</p>
-        </div>
+      {section.id === "settings" && (
+        <SettingsView settings={settings} onSave={onSaveSettings} />
       )}
     </section>
   );
@@ -116,6 +123,10 @@ export function App() {
   });
   const [trafficEntries, setTrafficEntries] = useState<TrafficEntry[]>([]);
   const [rules, setRules] = useState<HeaderRule[]>([]);
+  const [settings, setSettings] = useState<SettingsSnapshot>({
+    proxyPort: 9090,
+    trafficLimit: 500,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -144,6 +155,7 @@ export function App() {
     proxyStatus().then(setProxyState).catch(() => undefined);
     listTraffic().then(setTrafficEntries).catch(() => undefined);
     listRules().then(setRules).catch(() => undefined);
+    getSettings().then(setSettings).catch(() => undefined);
 
     let unlisten: (() => void) | undefined;
     onTrafficEntry((entry) => {
@@ -163,7 +175,7 @@ export function App() {
   }, []);
 
   async function handleStartProxy() {
-    setProxyState(await startProxy(9090));
+    setProxyState(await startProxy(settings.proxyPort));
   }
 
   async function handleStopProxy() {
@@ -185,6 +197,10 @@ export function App() {
 
   async function handleToggleRule(ruleId: string, enabled: boolean) {
     setRules(await toggleRule(ruleId, enabled));
+  }
+
+  async function handleSaveSettings(nextSettings: SettingsSnapshot) {
+    setSettings(await saveSettings(nextSettings));
   }
 
   return (
@@ -228,6 +244,8 @@ export function App() {
         onSaveRule={handleSaveRule}
         onDeleteRule={handleDeleteRule}
         onToggleRule={handleToggleRule}
+        settings={settings}
+        onSaveSettings={handleSaveSettings}
       />
     </main>
   );

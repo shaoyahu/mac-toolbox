@@ -261,20 +261,20 @@
 
 ## 里程碑 10：设置与持久化
 
-- [ ] 使用 Tauri app data directory 作为持久化位置。
-- [ ] 添加代理端口后端持久化。
-- [ ] 添加改写规则后端持久化。
-- [ ] 添加流量保留上限后端持久化。
-- [ ] 创建 `apps/desktop/src/features/settings/SettingsView.tsx`。
-- [ ] 添加代理端口输入和校验。
-- [ ] 添加流量保留设置。
-- [ ] 添加隐私默认行为说明。
-- [ ] 添加设置表单校验测试。
-- [ ] 将设置页面接入 `App.tsx`。
-- [ ] 运行 `pnpm --filter desktop test`。
-- [ ] 运行 `cargo test --workspace`。
-- [ ] 手动重启应用，验证设置和规则能重新加载。
-- [ ] 提交：`feat: persist settings and rules`。
+- [x] 使用 Tauri app data directory 作为持久化位置。
+- [x] 添加代理端口后端持久化。
+- [x] 添加改写规则后端持久化。
+- [x] 添加流量保留上限后端持久化。
+- [x] 创建 `apps/desktop/src/features/settings/SettingsView.tsx`。
+- [x] 添加代理端口输入和校验。
+- [x] 添加流量保留设置。
+- [x] 添加隐私默认行为说明。
+- [x] 添加设置表单校验测试。
+- [x] 将设置页面接入 `App.tsx`。
+- [x] 运行 `pnpm --filter desktop test`。
+- [x] 运行 `cargo test --workspace`。
+- [x] 手动重启应用，验证设置和规则能重新加载。
+- [x] 提交：`feat: persist settings and rules`。
 
 验收标准：
 
