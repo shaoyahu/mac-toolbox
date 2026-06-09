@@ -1,0 +1,55 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">macOS 工具箱图标</title>
+  <desc id="desc">绿色玻璃质感工具箱，包含网络节点、终端光点和本地系统叶片意象。</desc>
+  <defs>
+    <linearGradient id="shell" x1="86" y1="68" x2="424" y2="458" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8F5DF" />
+      <stop offset="0.46" stop-color="#DDE9D3" />
+      <stop offset="1" stop-color="#8FA884" />
+    </linearGradient>
+    <linearGradient id="case" x1="142" y1="145" x2="380" y2="397" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#244735" />
+      <stop offset="1" stop-color="#10271D" />
+    </linearGradient>
+    <linearGradient id="lid" x1="168" y1="123" x2="345" y2="245" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6F9164" />
+      <stop offset="1" stop-color="#294D39" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(170 148) rotate(42) scale(254)">
+      <stop stop-color="#FFFFFF" stop-opacity="0.72" />
+      <stop offset="0.56" stop-color="#D9E9B9" stop-opacity="0.24" />
+      <stop offset="1" stop-color="#D9E9B9" stop-opacity="0" />
+    </radialGradient>
+    <filter id="softShadow" x="46" y="46" width="420" height="432" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="28" stdDeviation="30" flood-color="#23362A" flood-opacity="0.26" />
+    </filter>
+  </defs>
+
+  <rect x="48" y="48" width="416" height="416" rx="104" fill="url(#shell)" />
+  <rect x="48" y="48" width="416" height="416" rx="104" fill="url(#glow)" />
+  <path d="M92 352C135 386 192 408 260 408C337 408 395 378 431 333V359C431 417 383 464 325 464H152C94 464 48 417 48 359V296C57 317 72 336 92 352Z" fill="#C4D4B8" opacity="0.45" />
+
+  <g filter="url(#softShadow)">
+    <path d="M171 185H341C375 185 403 213 403 247V344C403 378 375 406 341 406H171C137 406 109 378 109 344V247C109 213 137 185 171 185Z" fill="url(#case)" />
+    <path d="M180 152C180 128 199 109 223 109H289C313 109 332 128 332 152V188H294V157C294 151 289 146 283 146H229C223 146 218 151 218 157V188H180V152Z" fill="url(#lid)" />
+    <path d="M130 234H382V286C352 307 309 320 256 320C203 320 160 307 130 286V234Z" fill="#F5F2DE" opacity="0.16" />
+    <path d="M109 256H403" stroke="#E7E8CE" stroke-opacity="0.26" stroke-width="18" stroke-linecap="round" />
+  </g>
+
+  <path d="M174 279C201 246 238 236 285 248C248 255 227 276 219 309C199 309 184 300 174 279Z" fill="#C8DDA4" />
+  <path d="M219 309C242 285 273 267 324 263" stroke="#F5F4D9" stroke-width="13" stroke-linecap="round" />
+
+  <circle cx="177" cy="242" r="16" fill="#DDE9B4" />
+  <circle cx="337" cy="242" r="16" fill="#DDE9B4" />
+  <circle cx="257" cy="354" r="16" fill="#DDE9B4" />
+  <path d="M177 242H337M257 354L177 242M257 354L337 242" stroke="#DDE9B4" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.72" />
+
+  <path d="M181 242H333" stroke="#153124" stroke-width="16" stroke-linecap="round" stroke-opacity="0.38" />
+  <path d="M212 222L238 242L212 262" stroke="#F8F5DF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M264 262H305" stroke="#F8F5DF" stroke-width="14" stroke-linecap="round" />
+
+  <circle cx="177" cy="242" r="9" fill="#1C3A2B" />
+  <circle cx="337" cy="242" r="9" fill="#1C3A2B" />
+  <circle cx="257" cy="354" r="9" fill="#1C3A2B" />
+  <path d="M129 172C140 142 165 119 197 110" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="12" stroke-linecap="round" />
+</svg>
