@@ -3,7 +3,7 @@ import { SettingsSnapshot, WindowPreset } from "../../lib/settingsApi";
 
 type SettingsViewProps = {
   settings: SettingsSnapshot;
-  onSave: (settings: SettingsSnapshot) => void;
+  onSave: (settings: SettingsSnapshot) => Promise<string | null>;
 };
 
 export function SettingsView({ settings, onSave }: SettingsViewProps) {
@@ -11,8 +11,10 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
   const [trafficLimit, setTrafficLimit] = useState(String(settings.trafficLimit));
   const [windowPreset, setWindowPreset] = useState<WindowPreset>(settings.windowPreset);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const parsedPort = Number(proxyPort);
     const parsedLimit = Number(trafficLimit);
@@ -27,7 +29,16 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
     }
 
     setError(null);
-    onSave({ proxyPort: parsedPort, trafficLimit: parsedLimit, windowPreset });
+    setSuccess(null);
+    setIsSaving(true);
+    try {
+      const message = await onSave({ proxyPort: parsedPort, trafficLimit: parsedLimit, windowPreset });
+      setSuccess(message ?? "设置已保存，窗口大小已应用。");
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : String(saveError));
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -67,7 +78,10 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
         </p>
       </div>
       {error && <p className="form-error">{error}</p>}
-      <button type="submit">保存设置</button>
+      {success && <p className="form-success">{success}</p>}
+      <button type="submit" disabled={isSaving}>
+        {isSaving ? "正在保存..." : "保存设置"}
+      </button>
     </form>
   );
 }

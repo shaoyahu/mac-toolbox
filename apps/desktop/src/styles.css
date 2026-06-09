@@ -586,6 +586,11 @@ button.traffic-row:hover {
   color: #8b2f28;
 }
 
+.form-success {
+  margin: -0.35rem 0 0;
+  color: #3f6f45;
+}
+
 .rule-list {
   display: grid;
   gap: 0.75rem;
@@ -654,6 +659,11 @@ button.traffic-row:hover {
   color: #f8f5e8;
   background: #25362a;
   cursor: pointer;
+}
+
+.settings-form button:disabled {
+  cursor: wait;
+  opacity: 0.68;
 }
 
 .privacy-note {

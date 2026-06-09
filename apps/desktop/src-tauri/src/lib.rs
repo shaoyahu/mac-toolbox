@@ -77,6 +77,13 @@ struct SettingsSnapshot {
     window_preset: WindowPreset,
 }
 
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+struct WindowSizeSnapshot {
+    width: u32,
+    height: u32,
+}
+
 #[tauri::command]
 fn app_version() -> &'static str {
     env!("CARGO_PKG_VERSION")
@@ -293,10 +300,27 @@ fn apply_window_preset_to_window(
     preset: WindowPreset,
 ) -> Result<(), String> {
     let (width, height) = preset.size();
+    if window.is_fullscreen().map_err(|error| error.to_string())? {
+        window
+            .set_fullscreen(false)
+            .map_err(|error| error.to_string())?;
+    }
+    if window.is_maximized().map_err(|error| error.to_string())? {
+        window.unmaximize().map_err(|error| error.to_string())?;
+    }
     window
         .set_size(LogicalSize::new(width, height))
         .map_err(|error| error.to_string())?;
     window.center().map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn current_window_size(window: WebviewWindow) -> Result<WindowSizeSnapshot, String> {
+    let size = window.inner_size().map_err(|error| error.to_string())?;
+    Ok(WindowSizeSnapshot {
+        width: size.width,
+        height: size.height,
+    })
 }
 
 fn load_config_from_path(path: &Path) -> AppConfig {
@@ -354,6 +378,7 @@ pub fn run() {
             toggle_rule,
             get_settings,
             save_settings,
+            current_window_size,
             open_proxy_settings
         ])
         .run(tauri::generate_context!())

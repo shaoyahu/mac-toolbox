@@ -24,6 +24,7 @@ import {
   toggleRule,
 } from "./lib/rulesApi";
 import {
+  getCurrentWindowSize,
   getSettings,
   saveSettings,
   SettingsSnapshot,
@@ -65,7 +66,7 @@ function PageContent({
   onDeleteRule: (ruleId: string) => void;
   onToggleRule: (ruleId: string, enabled: boolean) => void;
   settings: SettingsSnapshot;
-  onSaveSettings: (settings: SettingsSnapshot) => void;
+  onSaveSettings: (settings: SettingsSnapshot) => Promise<string | null>;
 }) {
   const section = sections.find((item) => item.id === sectionId) ?? sections[0];
 
@@ -217,7 +218,14 @@ export function App() {
   }
 
   async function handleSaveSettings(nextSettings: SettingsSnapshot) {
-    setSettings(await saveSettings(nextSettings));
+    const savedSettings = await saveSettings(nextSettings);
+    setSettings(savedSettings);
+
+    const currentSize = await getCurrentWindowSize();
+    if (!currentSize) {
+      return "设置已保存。浏览器预览不会改变外层浏览器窗口大小，请在桌面应用窗口中查看效果。";
+    }
+    return `设置已保存，当前窗口约为 ${currentSize.width} x ${currentSize.height}。`;
   }
 
   return (
