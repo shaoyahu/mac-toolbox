@@ -4,6 +4,7 @@ import { SystemDashboard } from "./features/dashboard/SystemDashboard";
 import { RulesView } from "./features/rules/RulesView";
 import { SettingsView } from "./features/settings/SettingsView";
 import { TrafficView } from "./features/traffic/TrafficView";
+import { getAppVersion } from "./lib/appInfo";
 import { loadSystemSnapshot, SystemSnapshot } from "./lib/systemInfo";
 import {
   clearTraffic,
@@ -32,8 +33,10 @@ import {
 
 type SnapshotState =
   | { status: "loading" }
-  | { status: "ready"; snapshot: SystemSnapshot }
+  | { status: "ready"; snapshot: SystemSnapshot; updatedAt: Date }
   | { status: "error"; message: string };
+
+const SYSTEM_REFRESH_INTERVAL_MS = 5_000;
 
 function PageContent({
   sectionId,
@@ -136,28 +139,55 @@ export function App() {
     trafficLimit: 500,
     windowPreset: "comfortable",
   });
+  const [appVersion, setAppVersion] = useState("0.1.0");
+  const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
     let cancelled = false;
 
-    loadSystemSnapshot()
-      .then((snapshot) => {
+    async function refreshSnapshot() {
+      try {
+        const snapshot = await loadSystemSnapshot();
         if (!cancelled) {
-          setSnapshotState({ status: "ready", snapshot });
+          setSnapshotState({ status: "ready", snapshot, updatedAt: new Date() });
         }
-      })
-      .catch((error: unknown) => {
+      } catch (error: unknown) {
         if (!cancelled) {
           setSnapshotState({
             status: "error",
             message: error instanceof Error ? error.message : String(error),
           });
         }
-      });
+      }
+    }
+
+    refreshSnapshot();
+    const interval = window.setInterval(refreshSnapshot, SYSTEM_REFRESH_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAppVersion()
+      .then((version) => {
+        if (!cancelled) {
+          setAppVersion(version);
+        }
+      })
+      .catch(() => undefined);
 
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(new Date()), 1_000);
+    return () => window.clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -274,6 +304,56 @@ export function App() {
         settings={settings}
         onSaveSettings={handleSaveSettings}
       />
+      <AppFooter
+        appVersion={appVersion}
+        currentTime={now}
+        proxyState={proxyState}
+        snapshotState={snapshotState}
+        trafficCount={trafficEntries.length}
+      />
     </main>
+  );
+}
+
+function AppFooter({
+  appVersion,
+  currentTime,
+  proxyState,
+  snapshotState,
+  trafficCount,
+}: {
+  appVersion: string;
+  currentTime: Date;
+  proxyState: ProxyStatus;
+  snapshotState: SnapshotState;
+  trafficCount: number;
+}) {
+  const formattedTime = new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(currentTime);
+  const refreshedAt =
+    snapshotState.status === "ready"
+      ? new Intl.DateTimeFormat("zh-CN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        }).format(snapshotState.updatedAt)
+      : "未完成";
+
+  return (
+    <footer className="app-footer" aria-label="应用状态">
+      <span>时间 {formattedTime}</span>
+      <span>版本 {appVersion}</span>
+      <span>本机信息每 {SYSTEM_REFRESH_INTERVAL_MS / 1000} 秒刷新</span>
+      <span>最近刷新 {refreshedAt}</span>
+      <span>{proxyState.running ? `代理运行中：${proxyState.bindAddr}` : "代理已停止"}</span>
+      <span>流量 {trafficCount} 条</span>
+    </footer>
   );
 }
