@@ -303,21 +303,21 @@
 
 ## 里程碑 12：本地构建和冒烟 QA
 
-- [ ] 运行 `pnpm test`。
-- [ ] 运行 `cargo test --workspace`。
-- [ ] 运行 `pnpm build`。
-- [ ] 运行 `cargo check --workspace`。
-- [ ] 运行 Tauri dev app。
-- [ ] 冒烟测试仪表盘。
-- [ ] 冒烟测试代理启动/停止。
-- [ ] 冒烟测试普通 HTTP 请求捕获。
-- [ ] 冒烟测试 HTTPS `CONNECT` 元数据记录。
-- [ ] 冒烟测试请求头添加规则。
-- [ ] 冒烟测试请求头替换规则。
-- [ ] 冒烟测试请求头删除规则。
-- [ ] 冒烟测试应用重启后的设置持久化。
-- [ ] 修复冒烟 QA 发现的阻塞问题。
-- [ ] 使用聚焦的 commit message 提交修复。
+- [x] 运行 `pnpm test`。
+- [x] 运行 `cargo test --workspace`。
+- [x] 运行 `pnpm build`。
+- [x] 运行 `cargo check --workspace`。
+- [x] 运行 Tauri dev app。
+- [x] 冒烟测试仪表盘。
+- [x] 冒烟测试代理启动/停止。
+- [x] 冒烟测试普通 HTTP 请求捕获。
+- [x] 冒烟测试 HTTPS `CONNECT` 元数据记录。
+- [x] 冒烟测试请求头添加规则。
+- [x] 冒烟测试请求头替换规则。
+- [x] 冒烟测试请求头删除规则。
+- [x] 冒烟测试应用重启后的设置持久化。
+- [x] 修复冒烟 QA 发现的阻塞问题。
+- [x] 使用聚焦的 commit message 提交修复。
 
 验收标准：
 
