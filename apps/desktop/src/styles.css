@@ -161,12 +161,12 @@ button {
 
 h1 {
   position: relative;
-  max-width: 10em;
+  max-width: 12em;
   margin: 0;
   color: var(--ink);
-  font-size: clamp(2.75rem, 5.8vw, 4.8rem);
-  line-height: 1.02;
-  letter-spacing: -0.075em;
+  font-size: clamp(2.1rem, 4vw, 3.35rem);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
   text-wrap: balance;
 }
 
@@ -717,8 +717,8 @@ button.traffic-row:hover {
   }
 
   h1 {
-    font-size: clamp(2.25rem, 12vw, 3.2rem);
-    letter-spacing: -0.06em;
+    font-size: clamp(1.9rem, 9vw, 2.65rem);
+    letter-spacing: -0.04em;
   }
 
   .nav-item {
