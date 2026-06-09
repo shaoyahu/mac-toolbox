@@ -168,18 +168,18 @@
 
 ## 里程碑 6：代理服务 MVP
 
-- [ ] 给 `proxy-core` 添加 async runtime 依赖。
-- [ ] 实现绑定到 `127.0.0.1` 的本地 HTTP 代理服务。
-- [ ] 实现启动和停止 handle。
-- [ ] 记录请求 method、URL、host、path、请求头、时间戳、命中规则 id。
-- [ ] 转发普通 HTTP 请求。
-- [ ] 可用时记录响应 status、响应头、耗时。
-- [ ] 对 HTTPS `CONNECT` 只记录 tunnel 元数据，不解密内容。
-- [ ] 添加有界内存 `TrafficStore`。
-- [ ] 使用本地 HTTP test server 添加集成测试。
-- [ ] 添加测试，证明改写后的请求头到达上游 HTTP server。
-- [ ] 运行 `cargo test -p proxy-core`。
-- [ ] 提交：`feat: add local proxy server`。
+- [x] 给 `proxy-core` 添加 async runtime 依赖。
+- [x] 实现绑定到 `127.0.0.1` 的本地 HTTP 代理服务。
+- [x] 实现启动和停止 handle。
+- [x] 记录请求 method、URL、host、path、请求头、时间戳、命中规则 id。
+- [x] 转发普通 HTTP 请求。
+- [x] 可用时记录响应 status、响应头、耗时。
+- [x] 对 HTTPS `CONNECT` 只记录 tunnel 元数据，不解密内容。
+- [x] 添加有界内存 `TrafficStore`。
+- [x] 使用本地 HTTP test server 添加集成测试。
+- [x] 添加测试，证明改写后的请求头到达上游 HTTP server。
+- [x] 运行 `cargo test -p proxy-core`。
+- [x] 提交：`feat: add local proxy server`。
 
 验收标准：
 
