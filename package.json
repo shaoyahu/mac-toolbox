@@ -5,11 +5,11 @@
   "type": "module",
   "packageManager": "pnpm@10.13.1",
   "scripts": {
-    "dev": "pnpm --filter desktop dev",
-    "build": "pnpm --filter desktop build",
-    "test": "pnpm test:ui && pnpm test:rust",
-    "test:ui": "pnpm --filter desktop test",
+    "dev": "corepack pnpm --filter desktop dev",
+    "build": "corepack pnpm --filter desktop build",
+    "test": "corepack pnpm test:ui && corepack pnpm test:rust",
+    "test:ui": "corepack pnpm --filter desktop test",
     "test:rust": "cargo test --workspace",
-    "tauri": "pnpm --filter desktop tauri"
+    "tauri": "corepack pnpm --filter desktop tauri"
   }
 }

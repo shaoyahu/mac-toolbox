@@ -68,21 +68,21 @@
 
 ## 里程碑 1：Tauri React 桌面壳
 
-- [ ] 创建 `apps/desktop/package.json`，加入 Vite、React、TypeScript、Tauri API、Vitest、Testing Library 依赖。
-- [ ] 创建 `apps/desktop/index.html`。
-- [ ] 创建 `apps/desktop/vite.config.ts`，使用端口 `1420`。
-- [ ] 创建 `apps/desktop/tsconfig.json`，启用严格 TypeScript 配置。
-- [ ] 创建 `apps/desktop/src/main.tsx`。
-- [ ] 创建初始 `apps/desktop/src/App.tsx`。
-- [ ] 创建 `apps/desktop/src/styles.css`，实现桌面侧边栏布局。
-- [ ] 创建 `apps/desktop/src-tauri/Cargo.toml`。
-- [ ] 创建 `apps/desktop/src-tauri/tauri.conf.json`。
-- [ ] 创建 `apps/desktop/src-tauri/src/main.rs`。
-- [ ] 创建 `apps/desktop/src-tauri/src/lib.rs`，包含 `app_version` 命令。
-- [ ] 运行 `pnpm install`。
-- [ ] 运行 `pnpm build`。
-- [ ] 运行 `cargo check --workspace`。
-- [ ] 提交：`feat: scaffold Tauri desktop shell`。
+- [x] 创建 `apps/desktop/package.json`，加入 Vite、React、TypeScript、Tauri API、Vitest、Testing Library 依赖。
+- [x] 创建 `apps/desktop/index.html`。
+- [x] 创建 `apps/desktop/vite.config.ts`，使用端口 `1420`。
+- [x] 创建 `apps/desktop/tsconfig.json`，启用严格 TypeScript 配置。
+- [x] 创建 `apps/desktop/src/main.tsx`。
+- [x] 创建初始 `apps/desktop/src/App.tsx`。
+- [x] 创建 `apps/desktop/src/styles.css`，实现桌面侧边栏布局。
+- [x] 创建 `apps/desktop/src-tauri/Cargo.toml`。
+- [x] 创建 `apps/desktop/src-tauri/tauri.conf.json`。
+- [x] 创建 `apps/desktop/src-tauri/src/main.rs`。
+- [x] 创建 `apps/desktop/src-tauri/src/lib.rs`，包含 `app_version` 命令。
+- [x] 运行 `pnpm install`。
+- [x] 运行 `pnpm build`。
+- [x] 运行 `cargo check --workspace`。
+- [x] 提交：`feat: scaffold Tauri desktop shell`。
 
 验收标准：
 
