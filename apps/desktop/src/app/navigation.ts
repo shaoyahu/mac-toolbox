@@ -10,26 +10,26 @@ export type NavigationSection = {
 export const sections: NavigationSection[] = [
   {
     id: "dashboard",
-    label: "Dashboard",
-    title: "System dashboard",
-    description: "Read-only host, OS, CPU, memory, disk, and network details.",
+    label: "仪表盘",
+    title: "本机信息仪表盘",
+    description: "只读查看主机、系统、CPU、内存、磁盘和网络信息。",
   },
   {
     id: "traffic",
-    label: "Traffic",
-    title: "Traffic capture",
-    description: "Start a loopback proxy and inspect routed request metadata.",
+    label: "流量",
+    title: "本地代理抓包",
+    description: "启动本地回环代理，检查手动路由进来的请求元数据。",
   },
   {
     id: "rules",
-    label: "Header Rules",
-    title: "Header rewrite rules",
-    description: "Add, replace, or remove request headers for matching traffic.",
+    label: "请求头规则",
+    title: "请求头改写规则",
+    description: "为匹配的代理流量添加、替换或删除请求头。",
   },
   {
     id: "settings",
-    label: "Settings",
-    title: "Settings",
-    description: "Control proxy defaults, retention limits, and privacy behavior.",
+    label: "设置",
+    title: "设置",
+    description: "配置代理默认值、流量保留上限和隐私行为。",
   },
 ];

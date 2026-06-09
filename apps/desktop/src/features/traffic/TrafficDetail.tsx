@@ -10,30 +10,30 @@ export function TrafficDetail({ entry, rules = [] }: TrafficDetailProps) {
   if (!entry) {
     return (
       <aside className="traffic-detail">
-        <h2>Request detail</h2>
-        <p>Select a request to inspect headers and metadata.</p>
+        <h2>请求详情</h2>
+        <p>选择一条请求来查看请求头和元数据。</p>
       </aside>
     );
   }
 
   return (
     <aside className="traffic-detail">
-      <h2>Request detail</h2>
+      <h2>请求详情</h2>
       <dl>
         <dt>URL</dt>
         <dd>{entry.url}</dd>
-        <dt>Host</dt>
+        <dt>主机</dt>
         <dd>{entry.host}</dd>
-        <dt>Matched rules</dt>
+        <dt>命中规则</dt>
         <dd>
           {entry.matchedRuleIds.length > 0
-            ? `Matched rules: ${entry.matchedRuleIds
+            ? `命中规则：${entry.matchedRuleIds
                 .map((ruleId) => rules.find((rule) => rule.id === ruleId)?.name ?? ruleId)
                 .join(", ")}`
-            : "No matched rules"}
+            : "未命中规则"}
         </dd>
       </dl>
-      <h3>Request headers</h3>
+      <h3>请求头</h3>
       <pre>
         {Object.entries(entry.requestHeaders)
           .map(([name, value]) => `${name}: ${value}`)

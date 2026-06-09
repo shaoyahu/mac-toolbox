@@ -10,8 +10,8 @@ export function RuleList({ rules, onDelete, onToggle }: RuleListProps) {
   if (rules.length === 0) {
     return (
       <div className="empty-state compact">
-        <span>No rules yet</span>
-        <p>Create a rule to rewrite headers for matching proxy traffic.</p>
+        <span>还没有规则</span>
+        <p>创建规则后，可以改写匹配代理流量的请求头。</p>
       </div>
     );
   }
@@ -29,10 +29,10 @@ export function RuleList({ rules, onDelete, onToggle }: RuleListProps) {
               type="button"
               onClick={() => onToggle(rule.id, !rule.enabled)}
             >
-              {rule.enabled ? `Disable ${rule.name}` : `Enable ${rule.name}`}
+              {rule.enabled ? `禁用 ${rule.name}` : `启用 ${rule.name}`}
             </button>
             <button type="button" onClick={() => onDelete(rule.id)}>
-              Delete
+              删除
             </button>
           </div>
         </article>
@@ -43,15 +43,34 @@ export function RuleList({ rules, onDelete, onToggle }: RuleListProps) {
 
 function describeRule(rule: HeaderRule) {
   const matcher = rule.matchers
-    .map((item) => `${item.kind} ${item.operator} ${item.value}`)
+    .map((item) => `${describeMatcherKind(item.kind)}${describeOperator(item.operator)} ${item.value}`)
     .join(", ");
   const mutation = rule.mutations
     .map((item) =>
       item.kind === "delete"
-        ? `delete ${item.name}`
-        : `${item.kind} ${item.name}`,
+        ? `删除 ${item.name}`
+        : `${describeMutationKind(item.kind)} ${item.name}`,
     )
     .join(", ");
 
-  return `${rule.enabled ? "Enabled" : "Disabled"} · ${matcher} · ${mutation}`;
+  return `${rule.enabled ? "已启用" : "已禁用"} · ${matcher} · ${mutation}`;
+}
+
+function describeMatcherKind(kind: HeaderRule["matchers"][number]["kind"]) {
+  return kind === "host" ? "Host " : "路径 ";
+}
+
+function describeOperator(operator: HeaderRule["matchers"][number]["operator"]) {
+  switch (operator) {
+    case "exact":
+      return "精确匹配";
+    case "contains":
+      return "包含";
+    case "prefix":
+      return "前缀匹配";
+  }
+}
+
+function describeMutationKind(kind: Exclude<HeaderRule["mutations"][number]["kind"], "delete">) {
+  return kind === "add" ? "添加" : "替换";
 }

@@ -24,13 +24,13 @@ export function RuleEditor({ onSave }: RuleEditorProps) {
     event.preventDefault();
     const nextErrors: Errors = {};
     if (!name.trim()) {
-      nextErrors.name = "Rule name is required.";
+      nextErrors.name = "规则名称不能为空。";
     }
     if (!hostContains.trim() && !pathPrefix.trim()) {
-      nextErrors.matcher = "Host matcher is required.";
+      nextErrors.matcher = "Host 匹配条件不能为空。";
     }
     if (!headerName.trim()) {
-      nextErrors.headerName = "Header name is required.";
+      nextErrors.headerName = "请求头名称不能为空。";
     }
 
     setErrors(nextErrors);
@@ -80,12 +80,12 @@ export function RuleEditor({ onSave }: RuleEditorProps) {
   return (
     <form className="rule-editor" onSubmit={handleSubmit}>
       <label>
-        Rule name
+        规则名称
         <input value={name} onChange={(event) => setName(event.target.value)} />
       </label>
       {errors.name && <p className="form-error">{errors.name}</p>}
       <label>
-        Host contains
+        Host 包含
         <input
           value={hostContains}
           onChange={(event) => setHostContains(event.target.value)}
@@ -93,7 +93,7 @@ export function RuleEditor({ onSave }: RuleEditorProps) {
         />
       </label>
       <label>
-        Path prefix
+        路径前缀
         <input
           value={pathPrefix}
           onChange={(event) => setPathPrefix(event.target.value)}
@@ -102,28 +102,28 @@ export function RuleEditor({ onSave }: RuleEditorProps) {
       </label>
       {errors.matcher && <p className="form-error">{errors.matcher}</p>}
       <label>
-        Mutation
+        改写动作
         <select
           value={mutationKind}
           onChange={(event) => setMutationKind(event.target.value as HeaderMutation["kind"])}
         >
-          <option value="add">Add</option>
-          <option value="replace">Replace</option>
-          <option value="delete">Delete</option>
+          <option value="add">添加</option>
+          <option value="replace">替换</option>
+          <option value="delete">删除</option>
         </select>
       </label>
       <label>
-        Header name
+        请求头名称
         <input value={headerName} onChange={(event) => setHeaderName(event.target.value)} />
       </label>
       {errors.headerName && <p className="form-error">{errors.headerName}</p>}
       {mutationKind !== "delete" && (
         <label>
-          Header value
+          请求头值
           <input value={headerValue} onChange={(event) => setHeaderValue(event.target.value)} />
         </label>
       )}
-      <button type="submit">Save rule</button>
+      <button type="submit">保存规则</button>
     </form>
   );
 }

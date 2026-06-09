@@ -1,41 +1,37 @@
-# Local Proxy Privacy Model
+# 本地代理隐私模型
 
-macOS Toolbox runs a local manual proxy only when the user starts it. The proxy
-binds to `127.0.0.1`, so other machines on the network cannot route through it.
+macOS 工具箱只会在用户手动启动时运行本地代理。代理绑定到
+`127.0.0.1`，网络中的其他机器不能通过它转发流量。
 
-## What The MVP Captures
+## MVP 默认捕获什么
 
-- HTTP request method, URL, host, path, and request headers.
-- Response status when an upstream HTTP response is available.
-- Request duration and timestamp metadata.
-- IDs of header rewrite rules that matched the request.
+- HTTP 请求 method、URL、host、path 和请求头。
+- 上游 HTTP 响应可用时的响应状态。
+- 请求耗时和时间戳元数据。
+- 命中的请求头改写规则 ID。
 
-Traffic history is kept in bounded memory only. It is cleared when the proxy
-state is cleared or the app process exits.
+流量历史只保存在有上限的内存中。清空流量或应用进程退出后，当前流量历史会消失。
 
-## What The MVP Does Not Capture
+## MVP 不捕获什么
 
-- HTTPS request bodies or decrypted HTTPS headers beyond CONNECT metadata.
-- HTTP request bodies.
-- Persistent traffic history.
-- System-wide transparent traffic.
-- Browser traffic that was not manually configured to use the local proxy.
+- HTTPS 请求体，或 CONNECT 元数据之外的 HTTPS 解密请求头。
+- HTTP 请求体。
+- 持久化流量历史。
+- 系统级透明代理流量。
+- 没有手动配置到本地代理的浏览器流量。
 
-## HTTPS CONNECT Behavior
+## HTTPS CONNECT 行为
 
-When a client sends an HTTPS `CONNECT` request, the MVP records tunnel metadata
-such as method, host, port target, timestamp, and duration. It does not establish
-TLS interception, install a root certificate, decrypt payloads, or inspect HTTPS
-request bodies.
+当客户端发送 HTTPS `CONNECT` 请求时，MVP 只记录 tunnel 元数据，例如 method、
+host、端口目标、时间戳和耗时。它不会进行 TLS 中间人拦截，不会安装 root
+证书，不会解密载荷，也不会检查 HTTPS 请求体。
 
-## Header Rewrite Scope
+## 请求头改写范围
 
-Header rewrite rules apply only to requests that pass through this app's local
-proxy. They do not affect system traffic, browser extension traffic, or apps
-that are not explicitly configured to use the local proxy.
+请求头改写规则只作用于经过本应用本地代理的请求。它不会影响系统流量、浏览器扩展流量，
+也不会影响没有显式配置到本地代理的应用。
 
-## Manual Browser Setup
+## 手动浏览器配置
 
-Start the proxy from the Traffic page, then configure your browser or HTTP
-client to use `127.0.0.1:<port>` as its HTTP proxy. Disable that manual proxy
-setting when you are done testing.
+在“流量”页面启动代理，然后把浏览器或 HTTP 客户端的 HTTP 代理配置为
+`127.0.0.1:<port>`。测试结束后，请关闭这个手动代理设置。

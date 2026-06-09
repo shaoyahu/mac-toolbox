@@ -8,15 +8,15 @@ describe("RulesView", () => {
     const onSave = vi.fn();
     render(<RulesView rules={[]} onSave={onSave} onDelete={vi.fn()} onToggle={vi.fn()} />);
 
-    await userEvent.type(screen.getByLabelText("Rule name"), "Debug API");
-    await userEvent.type(screen.getByLabelText("Host contains"), "example.test");
-    await userEvent.type(screen.getByLabelText("Header name"), "x-debug");
-    await userEvent.type(screen.getByLabelText("Header value"), "true");
-    await userEvent.click(screen.getByRole("button", { name: "Save rule" }));
+    await userEvent.type(screen.getByLabelText("规则名称"), "调试 API");
+    await userEvent.type(screen.getByLabelText("Host 包含"), "example.test");
+    await userEvent.type(screen.getByLabelText("请求头名称"), "x-debug");
+    await userEvent.type(screen.getByLabelText("请求头值"), "true");
+    await userEvent.click(screen.getByRole("button", { name: "保存规则" }));
 
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({
-        name: "Debug API",
+        name: "调试 API",
         enabled: true,
       }),
     );
@@ -26,11 +26,11 @@ describe("RulesView", () => {
     const onSave = vi.fn();
     render(<RulesView rules={[]} onSave={onSave} onDelete={vi.fn()} onToggle={vi.fn()} />);
 
-    await userEvent.click(screen.getByRole("button", { name: "Save rule" }));
+    await userEvent.click(screen.getByRole("button", { name: "保存规则" }));
 
-    expect(screen.getByText("Rule name is required.")).toBeInTheDocument();
-    expect(screen.getByText("Host matcher is required.")).toBeInTheDocument();
-    expect(screen.getByText("Header name is required.")).toBeInTheDocument();
+    expect(screen.getByText("规则名称不能为空。")).toBeInTheDocument();
+    expect(screen.getByText("Host 匹配条件不能为空。")).toBeInTheDocument();
+    expect(screen.getByText("请求头名称不能为空。")).toBeInTheDocument();
     expect(onSave).not.toHaveBeenCalled();
   });
 
@@ -53,7 +53,7 @@ describe("RulesView", () => {
       />,
     );
 
-    await userEvent.click(screen.getByRole("button", { name: "Disable Debug" }));
+    await userEvent.click(screen.getByRole("button", { name: "禁用 Debug" }));
 
     expect(onToggle).toHaveBeenCalledWith("rule-1", false);
   });

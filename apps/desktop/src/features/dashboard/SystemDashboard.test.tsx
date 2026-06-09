@@ -24,9 +24,9 @@ describe("SystemDashboard", () => {
     expect(screen.getByText("studio.local")).toBeInTheDocument();
     expect(screen.getByText("macOS 15.0")).toBeInTheDocument();
     expect(screen.getByText("Apple M4")).toBeInTheDocument();
-    expect(screen.getByText("10 cores")).toBeInTheDocument();
+    expect(screen.getByText("10 核")).toBeInTheDocument();
     expect(screen.getByText("12 GB / 32 GB")).toBeInTheDocument();
-    expect(screen.getByText("600 GB available")).toBeInTheDocument();
-    expect(screen.getByText("4 interfaces")).toBeInTheDocument();
+    expect(screen.getByText("可用 600 GB")).toBeInTheDocument();
+    expect(screen.getByText("4 个接口")).toBeInTheDocument();
   });
 });

@@ -48,11 +48,11 @@ export function TrafficView({
         onClear={onClear}
       />
       <label className="traffic-search">
-        Search traffic
+        搜索流量
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Filter by host, method, or URL"
+          placeholder="按主机、方法或 URL 过滤"
         />
       </label>
       <div className="traffic-layout">

@@ -31,7 +31,7 @@ describe("TrafficView", () => {
       />,
     );
 
-    expect(screen.getByText("No traffic captured yet")).toBeInTheDocument();
+    expect(screen.getByText("还没有捕获到流量")).toBeInTheDocument();
   });
 
   it("selects a traffic row and shows request details", async () => {
@@ -47,8 +47,8 @@ describe("TrafficView", () => {
 
     await userEvent.click(screen.getByRole("button", { name: /GET .*api.example.test/ }));
 
-    expect(screen.getByText("Request headers")).toBeInTheDocument();
+    expect(screen.getByText("请求头")).toBeInTheDocument();
     expect(screen.getByText("accept: application/json")).toBeInTheDocument();
-    expect(screen.getByText("Matched rules: debug")).toBeInTheDocument();
+    expect(screen.getByText("命中规则：debug")).toBeInTheDocument();
   });
 });

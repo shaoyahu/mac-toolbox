@@ -66,7 +66,7 @@ function PageContent({
 
   return (
     <section className="content-panel" aria-labelledby="app-title">
-      <p className="section-label">Version 0.1</p>
+      <p className="section-label">版本 0.1</p>
       <h1 id="app-title">{section.title}</h1>
       <p className="lede">{section.description}</p>
       {section.id === "dashboard" && <DashboardState state={snapshotState} />}
@@ -97,13 +97,13 @@ function PageContent({
 
 function DashboardState({ state }: { state: SnapshotState }) {
   if (state.status === "loading") {
-    return <div className="status-panel">Loading system snapshot...</div>;
+    return <div className="status-panel">正在加载本机信息...</div>;
   }
 
   if (state.status === "error") {
     return (
       <div className="status-panel status-panel-error">
-        Failed to load system snapshot: {state.message}
+        本机信息加载失败：{state.message}
       </div>
     );
   }
@@ -205,12 +205,12 @@ export function App() {
 
   return (
     <main className="app-shell">
-      <aside className="sidebar" aria-label="Primary navigation">
+      <aside className="sidebar" aria-label="主导航">
         <div className="brand">
           <span className="brand-mark" aria-hidden="true" />
           <div>
-            <strong>macOS Toolbox</strong>
-            <span>Local developer utilities</span>
+            <strong>macOS 工具箱</strong>
+            <span>本地开发者工具</span>
           </div>
         </div>
         <nav className="nav-list">

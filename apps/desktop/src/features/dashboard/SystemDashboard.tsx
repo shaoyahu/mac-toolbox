@@ -14,28 +14,28 @@ export function SystemDashboard({ snapshot }: SystemDashboardProps) {
   )}`;
 
   return (
-    <div className="dashboard-grid" aria-label="System information">
-      <MetricCard label="Host" value={snapshot.hostName} detail={snapshot.kernelVersion} />
+    <div className="dashboard-grid" aria-label="本机信息">
+      <MetricCard label="主机" value={snapshot.hostName} detail={snapshot.kernelVersion} />
       <MetricCard
-        label="Operating system"
+        label="操作系统"
         value={`${snapshot.osName} ${snapshot.osVersion}`}
-        detail="Current runtime"
+        detail="当前运行环境"
       />
       <MetricCard
         label="CPU"
         value={snapshot.cpuName}
-        detail={`${snapshot.cpuCoreCount} cores`}
+        detail={`${snapshot.cpuCoreCount} 核`}
       />
-      <MetricCard label="Memory" value={memoryValue} detail="Used / total" />
+      <MetricCard label="内存" value={memoryValue} detail="已用 / 总量" />
       <MetricCard
-        label="Disk"
+        label="磁盘"
         value={formatStorageBytes(snapshot.totalDisk)}
-        detail={`${formatStorageBytes(snapshot.availableDisk)} available`}
+        detail={`可用 ${formatStorageBytes(snapshot.availableDisk)}`}
       />
       <MetricCard
-        label="Network"
-        value={`${snapshot.networkInterfaceCount} interfaces`}
-        detail="Detected adapters"
+        label="网络"
+        value={`${snapshot.networkInterfaceCount} 个接口`}
+        detail="检测到的网络适配器"
       />
     </div>
   );
