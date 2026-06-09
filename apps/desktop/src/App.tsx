@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { SectionId, sections } from "./app/navigation";
 import { SystemDashboard } from "./features/dashboard/SystemDashboard";
+import { RulesView } from "./features/rules/RulesView";
 import { TrafficView } from "./features/traffic/TrafficView";
 import { loadSystemSnapshot, SystemSnapshot } from "./lib/systemInfo";
 import {
@@ -13,6 +14,13 @@ import {
   stopProxy,
   TrafficEntry,
 } from "./lib/proxyApi";
+import {
+  deleteRule,
+  HeaderRule,
+  listRules,
+  saveRule,
+  toggleRule,
+} from "./lib/rulesApi";
 
 type SnapshotState =
   | { status: "loading" }
@@ -27,6 +35,10 @@ function PageContent({
   onStartProxy,
   onStopProxy,
   onClearTraffic,
+  rules,
+  onSaveRule,
+  onDeleteRule,
+  onToggleRule,
 }: {
   sectionId: SectionId;
   snapshotState: SnapshotState;
@@ -35,6 +47,10 @@ function PageContent({
   onStartProxy: () => void;
   onStopProxy: () => void;
   onClearTraffic: () => void;
+  rules: HeaderRule[];
+  onSaveRule: (rule: HeaderRule) => void;
+  onDeleteRule: (ruleId: string) => void;
+  onToggleRule: (ruleId: string, enabled: boolean) => void;
 }) {
   const section = sections.find((item) => item.id === sectionId) ?? sections[0];
 
@@ -48,12 +64,21 @@ function PageContent({
         <TrafficView
           entries={trafficEntries}
           status={proxyState}
+          rules={rules}
           onStart={onStartProxy}
           onStop={onStopProxy}
           onClear={onClearTraffic}
         />
       )}
-      {section.id !== "dashboard" && section.id !== "traffic" && (
+      {section.id === "rules" && (
+        <RulesView
+          rules={rules}
+          onSave={onSaveRule}
+          onDelete={onDeleteRule}
+          onToggle={onToggleRule}
+        />
+      )}
+      {section.id !== "dashboard" && section.id !== "traffic" && section.id !== "rules" && (
         <div className="empty-state">
           <span>{section.label}</span>
           <p>This workspace is ready for the next MVP milestone.</p>
@@ -90,6 +115,7 @@ export function App() {
     port: null,
   });
   const [trafficEntries, setTrafficEntries] = useState<TrafficEntry[]>([]);
+  const [rules, setRules] = useState<HeaderRule[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +143,7 @@ export function App() {
   useEffect(() => {
     proxyStatus().then(setProxyState).catch(() => undefined);
     listTraffic().then(setTrafficEntries).catch(() => undefined);
+    listRules().then(setRules).catch(() => undefined);
 
     let unlisten: (() => void) | undefined;
     onTrafficEntry((entry) => {
@@ -146,6 +173,18 @@ export function App() {
   async function handleClearTraffic() {
     await clearTraffic();
     setTrafficEntries([]);
+  }
+
+  async function handleSaveRule(rule: HeaderRule) {
+    setRules(await saveRule(rule));
+  }
+
+  async function handleDeleteRule(ruleId: string) {
+    setRules(await deleteRule(ruleId));
+  }
+
+  async function handleToggleRule(ruleId: string, enabled: boolean) {
+    setRules(await toggleRule(ruleId, enabled));
   }
 
   return (
@@ -185,6 +224,10 @@ export function App() {
         onStartProxy={handleStartProxy}
         onStopProxy={handleStopProxy}
         onClearTraffic={handleClearTraffic}
+        rules={rules}
+        onSaveRule={handleSaveRule}
+        onDeleteRule={handleDeleteRule}
+        onToggleRule={handleToggleRule}
       />
     </main>
   );

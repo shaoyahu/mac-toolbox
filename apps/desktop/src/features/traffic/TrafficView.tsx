@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { ProxyStatus, TrafficEntry } from "../../lib/proxyApi";
+import { HeaderRule } from "../../lib/rulesApi";
 import { ProxyControls } from "./ProxyControls";
 import { TrafficDetail } from "./TrafficDetail";
 import { TrafficTable } from "./TrafficTable";
@@ -7,6 +8,7 @@ import { TrafficTable } from "./TrafficTable";
 type TrafficViewProps = {
   entries: TrafficEntry[];
   status: ProxyStatus;
+  rules?: HeaderRule[];
   onStart: () => void;
   onStop: () => void;
   onClear: () => void;
@@ -15,6 +17,7 @@ type TrafficViewProps = {
 export function TrafficView({
   entries,
   status,
+  rules = [],
   onStart,
   onStop,
   onClear,
@@ -58,7 +61,7 @@ export function TrafficView({
           selectedId={selectedEntry?.id ?? null}
           onSelect={(entry) => setSelectedId(entry.id)}
         />
-        <TrafficDetail entry={selectedEntry} />
+        <TrafficDetail entry={selectedEntry} rules={rules} />
       </div>
     </div>
   );

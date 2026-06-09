@@ -1,10 +1,12 @@
 import { TrafficEntry } from "../../lib/proxyApi";
+import { HeaderRule } from "../../lib/rulesApi";
 
 type TrafficDetailProps = {
   entry: TrafficEntry | null;
+  rules?: HeaderRule[];
 };
 
-export function TrafficDetail({ entry }: TrafficDetailProps) {
+export function TrafficDetail({ entry, rules = [] }: TrafficDetailProps) {
   if (!entry) {
     return (
       <aside className="traffic-detail">
@@ -25,7 +27,9 @@ export function TrafficDetail({ entry }: TrafficDetailProps) {
         <dt>Matched rules</dt>
         <dd>
           {entry.matchedRuleIds.length > 0
-            ? `Matched rules: ${entry.matchedRuleIds.join(", ")}`
+            ? `Matched rules: ${entry.matchedRuleIds
+                .map((ruleId) => rules.find((rule) => rule.id === ruleId)?.name ?? ruleId)
+                .join(", ")}`
             : "No matched rules"}
         </dd>
       </dl>

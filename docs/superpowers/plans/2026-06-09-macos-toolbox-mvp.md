@@ -238,19 +238,19 @@
 
 ## 里程碑 9：请求头规则 UI
 
-- [ ] 创建 `apps/desktop/src/lib/rulesApi.ts`。
-- [ ] 创建 `apps/desktop/src/features/rules/RulesView.tsx`。
-- [ ] 创建 `apps/desktop/src/features/rules/RuleEditor.tsx`。
-- [ ] 创建 `apps/desktop/src/features/rules/RuleList.tsx`。
-- [ ] 添加测试覆盖创建规则草稿。
-- [ ] 添加测试覆盖校验：规则名非空、matcher 存在、请求头名非空。
-- [ ] 添加测试覆盖启用和禁用规则。
-- [ ] 实现创建、编辑、删除、启用/禁用交互。
-- [ ] 在流量详情中显示命中的规则名或 id。
-- [ ] 运行 `pnpm --filter desktop test`。
-- [ ] 运行 `pnpm build`。
-- [ ] 手动验证某条规则会修改经过代理的 HTTP 请求。
-- [ ] 提交：`feat: add header rewrite rules UI`。
+- [x] 创建 `apps/desktop/src/lib/rulesApi.ts`。
+- [x] 创建 `apps/desktop/src/features/rules/RulesView.tsx`。
+- [x] 创建 `apps/desktop/src/features/rules/RuleEditor.tsx`。
+- [x] 创建 `apps/desktop/src/features/rules/RuleList.tsx`。
+- [x] 添加测试覆盖创建规则草稿。
+- [x] 添加测试覆盖校验：规则名非空、matcher 存在、请求头名非空。
+- [x] 添加测试覆盖启用和禁用规则。
+- [x] 实现创建、编辑、删除、启用/禁用交互。
+- [x] 在流量详情中显示命中的规则名或 id。
+- [x] 运行 `pnpm --filter desktop test`。
+- [x] 运行 `pnpm build`。
+- [x] 手动验证某条规则会修改经过代理的 HTTP 请求。
+- [x] 提交：`feat: add header rewrite rules UI`。
 
 验收标准：
 
