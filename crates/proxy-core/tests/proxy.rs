@@ -71,19 +71,38 @@ async fn rewrites_headers_before_forwarding_to_upstream() {
 }
 
 #[tokio::test]
-async fn records_connect_without_decrypting_tunnel() {
+async fn tunnels_connect_without_decrypting_payload() {
+    let upstream_port = start_tunnel_upstream().await;
     let proxy = start_proxy(ProxyConfig::default()).await.unwrap();
 
-    let response = send_raw_request(
-        proxy.addr().port(),
-        "CONNECT example.test:443 HTTP/1.1\r\nHost: example.test:443\r\n\r\n",
-    )
-    .await;
+    let mut stream = TcpStream::connect(("127.0.0.1", proxy.addr().port()))
+        .await
+        .unwrap();
+    stream
+        .write_all(
+            format!(
+                "CONNECT 127.0.0.1:{upstream_port} HTTP/1.1\r\nHost: 127.0.0.1:{upstream_port}\r\n\r\n",
+            )
+            .as_bytes(),
+        )
+        .await
+        .unwrap();
 
-    assert!(response.starts_with("HTTP/1.1 501 Not Implemented"));
+    let mut response = [0_u8; 128];
+    let read = stream.read(&mut response).await.unwrap();
+    assert!(String::from_utf8_lossy(&response[..read])
+        .starts_with("HTTP/1.1 200 Connection Established"));
+
+    stream.write_all(b"tunnel payload").await.unwrap();
+
+    let mut echoed = [0_u8; 14];
+    stream.read_exact(&mut echoed).await.unwrap();
+    assert_eq!(&echoed, b"tunnel payload");
+
     let entries = proxy.store().list().await;
     assert_eq!(entries.len(), 1);
     assert_eq!(entries[0].method, "CONNECT");
+    assert_eq!(entries[0].host, "127.0.0.1");
     assert_eq!(entries[0].status, TrafficStatus::Tunnel);
 
     proxy.stop().await;
@@ -130,6 +149,21 @@ async fn start_upstream(seen_headers: Arc<Mutex<String>>) -> u16 {
                 .write_all(b"HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n")
                 .await
                 .unwrap();
+        }
+    });
+
+    port
+}
+
+async fn start_tunnel_upstream() -> u16 {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+
+    tokio::spawn(async move {
+        if let Ok((mut stream, _)) = listener.accept().await {
+            let mut buffer = [0_u8; 1024];
+            let read = stream.read(&mut buffer).await.unwrap();
+            stream.write_all(&buffer[..read]).await.unwrap();
         }
     });
 

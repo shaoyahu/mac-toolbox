@@ -9,7 +9,7 @@ use std::{
 };
 
 use tokio::{
-    io::{AsyncReadExt, AsyncWriteExt},
+    io::{copy_bidirectional, AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},
     sync::{oneshot, Mutex},
     task::JoinHandle,
@@ -145,12 +145,7 @@ async fn handle_connection(
     };
 
     if parsed.method.eq_ignore_ascii_case("CONNECT") {
-        let entry = parsed.to_entry(TrafficStatus::Tunnel, Vec::new(), started.elapsed());
-        store.push(entry).await;
-        client
-            .write_all(b"HTTP/1.1 501 Not Implemented\r\nContent-Length: 0\r\n\r\n")
-            .await?;
-        return Ok(());
+        return tunnel_connect(client, parsed, store, started).await;
     }
 
     let mut headers = parsed.headers.clone();
@@ -170,6 +165,39 @@ async fn handle_connection(
                 TrafficStatus::Failed(error.to_string()),
                 matched_rule_ids,
                 elapsed,
+            );
+            store.push(entry).await;
+            client
+                .write_all(b"HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n")
+                .await?;
+        }
+    }
+
+    Ok(())
+}
+
+async fn tunnel_connect(
+    mut client: TcpStream,
+    parsed: ParsedRequest,
+    store: TrafficStore,
+    started: std::time::Instant,
+) -> std::io::Result<()> {
+    let addr = format!("{}:{}", parsed.host, parsed.port);
+
+    match TcpStream::connect(addr).await {
+        Ok(mut upstream) => {
+            client
+                .write_all(b"HTTP/1.1 200 Connection Established\r\n\r\n")
+                .await?;
+            let entry = parsed.to_entry(TrafficStatus::Tunnel, Vec::new(), started.elapsed());
+            store.push(entry).await;
+            let _ = copy_bidirectional(&mut client, &mut upstream).await;
+        }
+        Err(error) => {
+            let entry = parsed.to_entry(
+                TrafficStatus::Failed(error.to_string()),
+                Vec::new(),
+                started.elapsed(),
             );
             store.push(entry).await;
             client
@@ -318,7 +346,12 @@ fn parse_http_target(target: &str, headers: &HeaderMap) -> Option<(String, u16, 
 
     let host_header = headers.get("host")?;
     let (host, port) = parse_host_port(host_header, 80);
-    Some((host, port, target.to_string(), format!("http://{host_header}{target}")))
+    Some((
+        host,
+        port,
+        target.to_string(),
+        format!("http://{host_header}{target}"),
+    ))
 }
 
 fn parse_host_port(authority: &str, default_port: u16) -> (String, u16) {

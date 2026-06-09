@@ -37,6 +37,7 @@ type SnapshotState =
   | { status: "error"; message: string };
 
 const SYSTEM_REFRESH_INTERVAL_MS = 5_000;
+const TRAFFIC_REFRESH_INTERVAL_MS = 1_000;
 
 function PageContent({
   sectionId,
@@ -212,6 +213,31 @@ export function App() {
       unlisten?.();
     };
   }, []);
+
+  useEffect(() => {
+    if (!proxyState.running) {
+      return;
+    }
+
+    let cancelled = false;
+    const refreshTraffic = () => {
+      listTraffic()
+        .then((entries) => {
+          if (!cancelled) {
+            setTrafficEntries(entries);
+          }
+        })
+        .catch(() => undefined);
+    };
+
+    refreshTraffic();
+    const interval = window.setInterval(refreshTraffic, TRAFFIC_REFRESH_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [proxyState.running]);
 
   async function handleStartProxy() {
     setProxyState(await startProxy(settings.proxyPort));
