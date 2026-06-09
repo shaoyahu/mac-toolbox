@@ -1,15 +1,19 @@
 use std::collections::BTreeMap;
 
+use serde::{Deserialize, Serialize};
+
 pub type HeaderMap = BTreeMap<String, String>;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub enum MatchOperator {
     Exact,
     Contains,
     Prefix,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", tag = "kind")]
 pub enum RuleMatcher {
     Host {
         operator: MatchOperator,
@@ -44,7 +48,8 @@ impl RuleMatcher {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", tag = "kind")]
 pub enum HeaderMutation {
     Add { name: String, value: String },
     Replace { name: String, value: String },
@@ -84,7 +89,8 @@ impl HeaderMutation {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct HeaderRule {
     pub id: String,
     pub name: String,
@@ -99,7 +105,8 @@ impl HeaderRule {
     }
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct RuleSet {
     rules: Vec<HeaderRule>,
 }
@@ -107,6 +114,10 @@ pub struct RuleSet {
 impl RuleSet {
     pub fn new(rules: Vec<HeaderRule>) -> Self {
         Self { rules }
+    }
+
+    pub fn rules(&self) -> &[HeaderRule] {
+        &self.rules
     }
 
     pub fn apply(&self, host: &str, path: &str, headers: &mut HeaderMap) -> Vec<String> {

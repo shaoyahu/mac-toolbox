@@ -190,19 +190,19 @@
 
 ## 里程碑 7：代理 Tauri Commands 和事件
 
-- [ ] 把 `proxy-core` 加为 `apps/desktop/src-tauri` 的依赖。
-- [ ] 添加后端应用状态：代理状态、设置、规则、流量存储。
-- [ ] 暴露 `proxy_status` 命令。
-- [ ] 暴露带可配置本地端口的 `start_proxy` 命令。
-- [ ] 暴露 `stop_proxy` 命令。
-- [ ] 暴露 `list_traffic` 命令。
-- [ ] 暴露 `clear_traffic` 命令。
-- [ ] 暴露 `list_rules`、`save_rule`、`delete_rule`、`toggle_rule` 命令。
-- [ ] 抓到新请求时向前端 emit traffic event。
-- [ ] 在可行范围内添加 Rust 测试覆盖命令级状态转换。
-- [ ] 运行 `cargo test --workspace`。
-- [ ] 运行 `cargo check --workspace`。
-- [ ] 提交：`feat: expose proxy commands`。
+- [x] 把 `proxy-core` 加为 `apps/desktop/src-tauri` 的依赖。
+- [x] 添加后端应用状态：代理状态、设置、规则、流量存储。
+- [x] 暴露 `proxy_status` 命令。
+- [x] 暴露带可配置本地端口的 `start_proxy` 命令。
+- [x] 暴露 `stop_proxy` 命令。
+- [x] 暴露 `list_traffic` 命令。
+- [x] 暴露 `clear_traffic` 命令。
+- [x] 暴露 `list_rules`、`save_rule`、`delete_rule`、`toggle_rule` 命令。
+- [x] 抓到新请求时向前端 emit traffic event。
+- [x] 在可行范围内添加 Rust 测试覆盖命令级状态转换。
+- [x] 运行 `cargo test --workspace`。
+- [x] 运行 `cargo check --workspace`。
+- [x] 提交：`feat: expose proxy commands`。
 
 验收标准：
 

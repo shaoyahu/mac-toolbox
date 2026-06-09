@@ -1727,11 +1727,13 @@ checksum = "953f07c43838f8e6f9758cab68bf5bed85465e7587ebe0b823f1bcd81978ad3a"
 name = "macos-toolbox"
 version = "0.1.0"
 dependencies = [
+ "proxy-core",
  "serde",
  "serde_json",
  "system-info",
  "tauri",
  "tauri-build",
+ "tokio",
 ]
 
 [[package]]
@@ -2346,6 +2348,7 @@ dependencies = [
 name = "proxy-core"
 version = "0.1.0"
 dependencies = [
+ "serde",
  "tokio",
 ]
 

@@ -1,8 +1,11 @@
 use std::collections::BTreeMap;
 
+use serde::{Deserialize, Serialize};
+
 pub type RequestHeaders = BTreeMap<String, String>;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", tag = "kind", content = "value")]
 pub enum TrafficStatus {
     Pending,
     Complete(u16),
@@ -10,7 +13,8 @@ pub enum TrafficStatus {
     Failed(String),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct TrafficEntry {
     pub id: String,
     pub method: String,

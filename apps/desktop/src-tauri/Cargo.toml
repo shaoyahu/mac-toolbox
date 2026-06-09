@@ -17,3 +17,5 @@ tauri = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 system-info = { path = "../../../crates/system-info" }
+proxy-core = { path = "../../../crates/proxy-core" }
+tokio = { version = "1", features = ["sync", "time"] }
