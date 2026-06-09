@@ -400,6 +400,8 @@ h1 {
 
 .toolbar-actions {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.6rem;
 }
 
@@ -410,6 +412,11 @@ h1 {
   color: #f8f5e8;
   background: #25362a;
   cursor: pointer;
+}
+
+.toolbar-actions .secondary-action {
+  color: #25362a;
+  background: rgba(37, 54, 42, 0.1);
 }
 
 .traffic-search {

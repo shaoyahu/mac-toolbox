@@ -12,6 +12,8 @@ type TrafficViewProps = {
   onStart: () => void;
   onStop: () => void;
   onClear: () => void;
+  onOpenSettings?: () => void;
+  onCopyProxyAddress?: () => void;
 };
 
 export function TrafficView({
@@ -21,6 +23,8 @@ export function TrafficView({
   onStart,
   onStop,
   onClear,
+  onOpenSettings = () => undefined,
+  onCopyProxyAddress = () => undefined,
 }: TrafficViewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(entries[0]?.id ?? null);
   const [query, setQuery] = useState("");
@@ -46,6 +50,8 @@ export function TrafficView({
         onStart={onStart}
         onStop={onStop}
         onClear={onClear}
+        onOpenSettings={onOpenSettings}
+        onCopyProxyAddress={onCopyProxyAddress}
       />
       <label className="traffic-search">
         搜索流量

@@ -9,6 +9,7 @@ import {
   clearTraffic,
   listTraffic,
   onTrafficEntry,
+  openProxySettings,
   proxyStatus,
   ProxyStatus,
   startProxy,
@@ -41,6 +42,8 @@ function PageContent({
   onStartProxy,
   onStopProxy,
   onClearTraffic,
+  onOpenProxySettings,
+  onCopyProxyAddress,
   rules,
   onSaveRule,
   onDeleteRule,
@@ -55,6 +58,8 @@ function PageContent({
   onStartProxy: () => void;
   onStopProxy: () => void;
   onClearTraffic: () => void;
+  onOpenProxySettings: () => void;
+  onCopyProxyAddress: () => void;
   rules: HeaderRule[];
   onSaveRule: (rule: HeaderRule) => void;
   onDeleteRule: (ruleId: string) => void;
@@ -78,6 +83,8 @@ function PageContent({
           onStart={onStartProxy}
           onStop={onStopProxy}
           onClear={onClearTraffic}
+          onOpenSettings={onOpenProxySettings}
+          onCopyProxyAddress={onCopyProxyAddress}
         />
       )}
       {section.id === "rules" && (
@@ -187,6 +194,15 @@ export function App() {
     setTrafficEntries([]);
   }
 
+  async function handleOpenProxySettings() {
+    await openProxySettings();
+  }
+
+  async function handleCopyProxyAddress() {
+    const address = proxyState.bindAddr ?? `127.0.0.1:${settings.proxyPort}`;
+    await navigator.clipboard?.writeText(address);
+  }
+
   async function handleSaveRule(rule: HeaderRule) {
     setRules(await saveRule(rule));
   }
@@ -240,6 +256,8 @@ export function App() {
         onStartProxy={handleStartProxy}
         onStopProxy={handleStopProxy}
         onClearTraffic={handleClearTraffic}
+        onOpenProxySettings={handleOpenProxySettings}
+        onCopyProxyAddress={handleCopyProxyAddress}
         rules={rules}
         onSaveRule={handleSaveRule}
         onDeleteRule={handleDeleteRule}

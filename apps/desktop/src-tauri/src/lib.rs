@@ -1,4 +1,4 @@
-use std::{fs, net::SocketAddr, path::Path, time::Duration};
+use std::{fs, net::SocketAddr, path::Path, process::Command, time::Duration};
 
 use proxy_core::{
     proxy::{start_proxy as start_proxy_server, ProxyConfig, ProxyHandle, TrafficStore},
@@ -191,6 +191,11 @@ async fn save_settings(
     Ok(settings)
 }
 
+#[tauri::command]
+fn open_proxy_settings() -> Result<(), String> {
+    open_macos_url("x-apple.systempreferences:com.apple.Network-Settings.extension")
+}
+
 fn proxy_status_from_guard(proxy: &Option<RunningProxy>) -> ProxyStatus {
     match proxy {
         Some(running) => proxy_status_from_addr(running.handle.addr()),
@@ -232,6 +237,20 @@ fn validate_settings(proxy_port: u16, traffic_limit: usize) -> Result<(), String
         return Err("Traffic retention must be between 10 and 10000.".to_string());
     }
     Ok(())
+}
+
+fn open_macos_url(url: &str) -> Result<(), String> {
+    Command::new("open")
+        .arg(url)
+        .status()
+        .map_err(|error| error.to_string())
+        .and_then(|status| {
+            if status.success() {
+                Ok(())
+            } else {
+                Err(format!("open command exited with status {status}"))
+            }
+        })
 }
 
 fn load_config_from_path(path: &Path) -> AppConfig {
@@ -286,7 +305,8 @@ pub fn run() {
             delete_rule,
             toggle_rule,
             get_settings,
-            save_settings
+            save_settings,
+            open_proxy_settings
         ])
         .run(tauri::generate_context!())
         .expect("failed to run macOS Toolbox");

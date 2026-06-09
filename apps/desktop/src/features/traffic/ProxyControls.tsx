@@ -5,6 +5,8 @@ type ProxyControlsProps = {
   onStart: () => void;
   onStop: () => void;
   onClear: () => void;
+  onOpenSettings: () => void;
+  onCopyProxyAddress: () => void;
 };
 
 export function ProxyControls({
@@ -12,6 +14,8 @@ export function ProxyControls({
   onStart,
   onStop,
   onClear,
+  onOpenSettings,
+  onCopyProxyAddress,
 }: ProxyControlsProps) {
   return (
     <div className="traffic-toolbar">
@@ -36,6 +40,12 @@ export function ProxyControls({
         )}
         <button type="button" onClick={onClear}>
           清空流量
+        </button>
+        <button type="button" className="secondary-action" onClick={onCopyProxyAddress}>
+          复制代理地址
+        </button>
+        <button type="button" className="secondary-action" onClick={onOpenSettings}>
+          打开代理设置
         </button>
       </div>
     </div>

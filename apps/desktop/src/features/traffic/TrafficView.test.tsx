@@ -21,6 +21,8 @@ const entry: TrafficEntry = {
 
 describe("TrafficView", () => {
   it("renders an empty traffic state", () => {
+    const onOpenSettings = vi.fn();
+    const onCopyProxyAddress = vi.fn();
     render(
       <TrafficView
         entries={[]}
@@ -28,10 +30,14 @@ describe("TrafficView", () => {
         onStart={vi.fn()}
         onStop={vi.fn()}
         onClear={vi.fn()}
+        onOpenSettings={onOpenSettings}
+        onCopyProxyAddress={onCopyProxyAddress}
       />,
     );
 
     expect(screen.getByText("还没有捕获到流量")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "打开代理设置" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "复制代理地址" })).toBeInTheDocument();
   });
 
   it("selects a traffic row and shows request details", async () => {

@@ -56,6 +56,13 @@ export function clearTraffic() {
   return invoke<void>("clear_traffic");
 }
 
+export function openProxySettings() {
+  if (!hasTauriRuntime()) {
+    return Promise.resolve();
+  }
+  return invoke<void>("open_proxy_settings");
+}
+
 export function onTrafficEntry(callback: (entry: TrafficEntry) => void) {
   if (!hasTauriRuntime()) {
     void callback;
