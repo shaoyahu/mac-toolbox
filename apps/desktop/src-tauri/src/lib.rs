@@ -6,7 +6,7 @@ use proxy_core::{
     traffic::TrafficEntry,
 };
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, LogicalSize, Manager, State};
+use tauri::{AppHandle, Emitter, LogicalSize, Manager, State, WebviewWindow};
 use tokio::{sync::Mutex, task::JoinHandle};
 
 #[derive(Default)]
@@ -204,7 +204,7 @@ async fn get_settings(state: State<'_, BackendState>) -> Result<SettingsSnapshot
 
 #[tauri::command]
 async fn save_settings(
-    app: AppHandle,
+    window: WebviewWindow,
     state: State<'_, BackendState>,
     settings: SettingsSnapshot,
 ) -> Result<SettingsSnapshot, String> {
@@ -214,7 +214,7 @@ async fn save_settings(
     config.traffic_limit = settings.traffic_limit;
     config.window_preset = settings.window_preset;
     persist_config_state(&state, &config)?;
-    apply_window_preset(&app, settings.window_preset)?;
+    apply_window_preset_to_window(&window, settings.window_preset)?;
     Ok(settings)
 }
 
@@ -281,9 +281,17 @@ fn open_macos_url(url: &str) -> Result<(), String> {
 }
 
 fn apply_window_preset(app: &AppHandle, preset: WindowPreset) -> Result<(), String> {
-    let Some(window) = app.get_webview_window("main") else {
-        return Ok(());
-    };
+    let window = app
+        .get_webview_window("main")
+        .or_else(|| app.webview_windows().into_values().next())
+        .ok_or_else(|| "找不到可调整大小的主窗口。".to_string())?;
+    apply_window_preset_to_window(&window, preset)
+}
+
+fn apply_window_preset_to_window(
+    window: &WebviewWindow,
+    preset: WindowPreset,
+) -> Result<(), String> {
     let (width, height) = preset.size();
     window
         .set_size(LogicalSize::new(width, height))

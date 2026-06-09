@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "macOS Toolbox",
         "width": 1120,
         "height": 760,
