@@ -53,13 +53,13 @@
 
 ## 里程碑 0：Workspace 基础
 
-- [ ] 创建根目录 `package.json`，包含脚本：`dev`、`build`、`test`、`test:ui`、`test:rust`、`tauri`。
-- [ ] 创建 `pnpm-workspace.yaml`，包含 `apps/*`。
-- [ ] 创建根目录 `Cargo.toml` 工作区，包含 `apps/desktop/src-tauri`、`crates/system-info`、`crates/proxy-core`。
-- [ ] 创建 `.gitignore`，忽略 `node_modules`、`dist`、`target`、`.env*`、`.DS_Store`。
-- [ ] 用 `pnpm --version` 验证包管理器。
-- [ ] 如果 `pnpm` 不可用，通过 Corepack 启用。
-- [ ] 提交：`chore: add workspace foundation`。
+- [x] 创建根目录 `package.json`，包含脚本：`dev`、`build`、`test`、`test:ui`、`test:rust`、`tauri`。
+- [x] 创建 `pnpm-workspace.yaml`，包含 `apps/*`。
+- [x] 创建根目录 `Cargo.toml` 工作区，包含 `apps/desktop/src-tauri`、`crates/system-info`、`crates/proxy-core`。
+- [x] 创建 `.gitignore`，忽略 `node_modules`、`dist`、`target`、`.env*`、`.DS_Store`。
+- [x] 用 `pnpm --version` 验证包管理器。
+- [x] 如果 `pnpm` 不可用，通过 Corepack 启用。
+- [x] 提交：`chore: add workspace foundation`。
 
 验收标准：
 
