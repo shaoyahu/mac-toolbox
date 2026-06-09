@@ -1,361 +1,361 @@
-# macOS Toolbox MVP Task List
+# macOS 全能工具箱 MVP 任务列表
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **给自动化执行代理的要求：** 实现本计划时必须使用 `superpowers:subagent-driven-development`（推荐）或 `superpowers:executing-plans`，并按任务逐项执行。步骤使用复选框（`- [ ]`）语法，便于追踪。
 
-**Goal:** Build the first working macOS toolbox app with a React/Tauri shell, system information dashboard, local proxy capture, and basic request-header rewrite rules.
+**目标：** 构建第一版可运行的 macOS 工具箱应用，包含 React/Tauri 桌面壳、本机信息仪表盘、本地代理抓包、基础请求头改写规则。
 
-**Architecture:** Tauri 2 hosts the macOS desktop app, React + TypeScript renders the UI, and Rust owns native commands, system information, proxy services, traffic models, and rewrite logic. The MVP stays local-only and manually configured; HTTPS decryption, browser extensions, and system transparent proxying are later projects.
+**架构：** Tauri 2 承载 macOS 桌面应用，React + TypeScript 渲染 UI，Rust 负责原生命令、本机信息、代理服务、流量模型和规则改写逻辑。MVP 保持仅本地运行、手动配置、保守抓包；HTTPS 解密、浏览器扩展、系统透明代理属于后续项目。
 
-**Tech Stack:** Tauri 2, React, TypeScript, Vite, Rust, Cargo workspace, Vitest, Rust unit tests.
+**技术栈：** Tauri 2、React、TypeScript、Vite、Rust、Cargo workspace、Vitest、Rust 单元测试。
 
 ---
 
-## Scope
-
-Included in Version 0.1:
-
-- Desktop app scaffold.
-- Sidebar/detail UI with Dashboard, Traffic, Header Rules, and Settings.
-- Local system information snapshot.
-- Local manually configured proxy server.
-- In-memory traffic log.
-- Request-header rewrite rules for proxied traffic.
-- Basic settings and rule persistence.
-- Security documentation for capture and rewrite behavior.
-
-Excluded from Version 0.1:
-
-- Automatic system proxy switching.
-- HTTPS body decryption.
-- Automatic root CA installation.
-- Safari or Chrome extension packaging.
-- Network Extension transparent proxy mode.
-- Full packet capture.
-- Persistent traffic history.
-
-## Target File Structure
-
-- `package.json`: root scripts.
-- `pnpm-workspace.yaml`: JavaScript workspace.
-- `Cargo.toml`: Rust workspace.
-- `apps/desktop`: Tauri + React app.
-- `apps/desktop/src/app`: app-level navigation and state.
-- `apps/desktop/src/components`: shared UI components.
-- `apps/desktop/src/features/dashboard`: system info dashboard.
-- `apps/desktop/src/features/traffic`: proxy controls, traffic table, request detail.
-- `apps/desktop/src/features/rules`: header rewrite rule editor.
-- `apps/desktop/src/features/settings`: preferences UI.
-- `apps/desktop/src/lib`: typed Tauri API clients and formatters.
-- `apps/desktop/src-tauri`: Tauri backend.
-- `crates/system-info`: system snapshot provider.
-- `crates/proxy-core`: proxy models, server, traffic store, and rewrite engine.
-- `docs/security`: local capture, privacy, and trust notes.
-
-## Milestone 0: Workspace Foundation
-
-- [ ] Create root `package.json` with scripts: `dev`, `build`, `test`, `test:ui`, `test:rust`, and `tauri`.
-- [ ] Create `pnpm-workspace.yaml` with `apps/*`.
-- [ ] Create root `Cargo.toml` workspace with `apps/desktop/src-tauri`, `crates/system-info`, and `crates/proxy-core`.
-- [ ] Create `.gitignore` for `node_modules`, `dist`, `target`, `.env*`, and `.DS_Store`.
-- [ ] Verify package manager with `pnpm --version`.
-- [ ] If `pnpm` is unavailable, enable it with Corepack.
-- [ ] Commit: `chore: add workspace foundation`.
-
-Acceptance:
-
-- Root workspace files exist.
-- `git status` shows no uncommitted foundation changes after commit.
-
-## Milestone 1: Tauri React Desktop Shell
-
-- [ ] Create `apps/desktop/package.json` with Vite, React, TypeScript, Tauri API, Vitest, and Testing Library dependencies.
-- [ ] Create `apps/desktop/index.html`.
-- [ ] Create `apps/desktop/vite.config.ts` using port `1420`.
-- [ ] Create `apps/desktop/tsconfig.json` with strict TypeScript settings.
-- [ ] Create `apps/desktop/src/main.tsx`.
-- [ ] Create initial `apps/desktop/src/App.tsx`.
-- [ ] Create `apps/desktop/src/styles.css` with desktop sidebar layout.
-- [ ] Create `apps/desktop/src-tauri/Cargo.toml`.
-- [ ] Create `apps/desktop/src-tauri/tauri.conf.json`.
-- [ ] Create `apps/desktop/src-tauri/src/main.rs`.
-- [ ] Create `apps/desktop/src-tauri/src/lib.rs` with an `app_version` command.
-- [ ] Run `pnpm install`.
-- [ ] Run `pnpm build`.
-- [ ] Run `cargo check --workspace`.
-- [ ] Commit: `feat: scaffold Tauri desktop shell`.
-
-Acceptance:
-
-- Frontend builds.
-- Rust backend checks.
-- Tauri shell has a visible initial window when run locally.
-
-## Milestone 2: App Navigation And Base UI
-
-- [ ] Create `apps/desktop/src/app/navigation.ts` with section ids: `dashboard`, `traffic`, `rules`, `settings`.
-- [ ] Add a navigation unit test that verifies section order.
-- [ ] Replace hardcoded sidebar buttons with navigation model rendering.
-- [ ] Add selected-section state in `App.tsx`.
-- [ ] Add placeholder content for non-dashboard sections.
-- [ ] Add responsive layout CSS for smaller windows.
-- [ ] Run `pnpm --filter desktop test`.
-- [ ] Run `pnpm build`.
-- [ ] Commit: `feat: add app navigation`.
-
-Acceptance:
-
-- Clicking sidebar items changes the visible section.
-- Navigation order matches the MVP design.
-- UI remains usable at the configured minimum window size.
-
-## Milestone 3: System Information Backend
-
-- [ ] Create `crates/system-info/Cargo.toml`.
-- [ ] Create `crates/system-info/src/lib.rs`.
-- [ ] Define `SystemSnapshot` with OS name, OS version, kernel version, host name, CPU brand, CPU count, total memory, used memory, disk capacity, free disk, and network interface count.
-- [ ] Implement `collect_system_snapshot()`.
-- [ ] Add Rust tests proving CPU count, memory, and OS name are populated.
-- [ ] Add `system-info` as a dependency of `apps/desktop/src-tauri`.
-- [ ] Expose `system_snapshot` as a Tauri command.
-- [ ] Run `cargo test -p system-info`.
-- [ ] Run `cargo check --workspace`.
-- [ ] Commit: `feat: add system information backend`.
-
-Acceptance:
-
-- `system-info` tests pass.
-- Tauri backend compiles with the new command.
-- Snapshot fields serialize cleanly to the frontend.
-
-## Milestone 4: System Information Dashboard
-
-- [ ] Create `apps/desktop/src/lib/systemInfo.ts` with frontend types, DTO mapping, `loadSystemSnapshot()`, and byte formatting.
-- [ ] Create `apps/desktop/src/features/dashboard/SystemDashboard.tsx`.
-- [ ] Add a rendering test for dashboard cards.
-- [ ] Wire dashboard loading into `App.tsx`.
-- [ ] Add loading and error states.
-- [ ] Add dashboard card styling.
-- [ ] Run `pnpm --filter desktop test`.
-- [ ] Run `pnpm build`.
-- [ ] Run the app and visually verify dashboard data appears.
-- [ ] Commit: `feat: add system dashboard`.
-
-Acceptance:
-
-- Dashboard shows host, OS, CPU, memory, disk, and network information.
-- Loading and error states are visible and understandable.
-- Tests and build pass.
-
-## Milestone 5: Proxy Domain And Rewrite Engine
-
-- [ ] Create `crates/proxy-core/Cargo.toml`.
-- [ ] Create `crates/proxy-core/src/lib.rs`.
-- [ ] Create `crates/proxy-core/src/traffic.rs` with `TrafficEntry`, `TrafficStatus`, header map, timestamps, duration, and matched rule id.
-- [ ] Create `crates/proxy-core/src/rules.rs` with `HeaderRule`, `RuleMatcher`, `HeaderMutation`, and `RuleSet`.
-- [ ] Implement matching by host exact, host contains, path prefix, and path contains.
-- [ ] Implement header add, replace, and remove mutations.
-- [ ] Add Rust unit tests for host matching.
-- [ ] Add Rust unit tests for path matching.
-- [ ] Add Rust unit tests for add, replace, and remove mutations.
-- [ ] Run `cargo test -p proxy-core`.
-- [ ] Commit: `feat: add proxy rewrite engine`.
-
-Acceptance:
-
-- Rule matching is deterministic.
-- Header mutation behavior is covered by tests before server integration.
-- No proxy networking code depends on UI types.
-
-## Milestone 6: Proxy Server MVP
-
-- [ ] Add async runtime dependencies to `proxy-core`.
-- [ ] Implement a local HTTP proxy server bound to `127.0.0.1`.
-- [ ] Implement start and stop handles.
-- [ ] Record request method, URL, host, path, request headers, timestamp, and matched rule id.
-- [ ] Forward plain HTTP requests.
-- [ ] Record response status, response headers, and duration when available.
-- [ ] Handle HTTPS `CONNECT` as tunnel metadata only; do not decrypt content.
-- [ ] Add an in-memory bounded `TrafficStore`.
-- [ ] Add integration tests using a local HTTP test server.
-- [ ] Add a test proving rewritten headers reach the upstream HTTP server.
-- [ ] Run `cargo test -p proxy-core`.
-- [ ] Commit: `feat: add local proxy server`.
-
-Acceptance:
-
-- Plain HTTP traffic can be proxied.
-- HTTPS tunnel attempts are logged without body decryption.
-- Header rules modify matching proxied HTTP requests.
-- Traffic store retention is bounded.
-
-## Milestone 7: Proxy Tauri Commands And Events
-
-- [ ] Add `proxy-core` as a dependency of `apps/desktop/src-tauri`.
-- [ ] Add backend app state for proxy status, settings, rules, and traffic store.
-- [ ] Expose `proxy_status` command.
-- [ ] Expose `start_proxy` command with configurable local port.
-- [ ] Expose `stop_proxy` command.
-- [ ] Expose `list_traffic` command.
-- [ ] Expose `clear_traffic` command.
-- [ ] Expose `list_rules`, `save_rule`, `delete_rule`, and `toggle_rule` commands.
-- [ ] Emit traffic events to the frontend when new requests are captured.
-- [ ] Add Rust tests for command-level state transitions where practical.
-- [ ] Run `cargo test --workspace`.
-- [ ] Run `cargo check --workspace`.
-- [ ] Commit: `feat: expose proxy commands`.
-
-Acceptance:
-
-- Proxy can be started and stopped from Tauri commands.
-- Traffic entries are retrievable from the frontend.
-- Rule commands mutate backend state safely.
-
-## Milestone 8: Traffic UI
-
-- [ ] Create `apps/desktop/src/lib/proxyApi.ts` with typed Tauri client functions.
-- [ ] Create `apps/desktop/src/features/traffic/TrafficView.tsx`.
-- [ ] Create `apps/desktop/src/features/traffic/ProxyControls.tsx`.
-- [ ] Create `apps/desktop/src/features/traffic/TrafficTable.tsx`.
-- [ ] Create `apps/desktop/src/features/traffic/TrafficDetail.tsx`.
-- [ ] Add tests for rendering empty traffic state.
-- [ ] Add tests for selecting a traffic row and showing detail.
-- [ ] Add start/stop proxy buttons.
-- [ ] Add clear traffic button.
-- [ ] Add search/filter by host, method, and URL.
-- [ ] Subscribe to backend traffic events.
-- [ ] Wire Traffic section into `App.tsx`.
-- [ ] Run `pnpm --filter desktop test`.
-- [ ] Run `pnpm build`.
-- [ ] Manually run app, configure browser proxy, and verify request rows appear.
-- [ ] Commit: `feat: add traffic capture UI`.
-
-Acceptance:
-
-- User can start and stop the local proxy from the UI.
-- Request rows appear for manually proxied browser traffic.
-- Selecting a row displays headers and metadata.
-- Clear removes current in-memory traffic.
-
-## Milestone 9: Header Rules UI
-
-- [ ] Create `apps/desktop/src/lib/rulesApi.ts`.
-- [ ] Create `apps/desktop/src/features/rules/RulesView.tsx`.
-- [ ] Create `apps/desktop/src/features/rules/RuleEditor.tsx`.
-- [ ] Create `apps/desktop/src/features/rules/RuleList.tsx`.
-- [ ] Add tests for creating a rule draft.
-- [ ] Add tests for validation: non-empty rule name, matcher, and header name.
-- [ ] Add tests for enabling and disabling a rule.
-- [ ] Implement create, edit, delete, and toggle interactions.
-- [ ] Show matched rule name/id in Traffic detail.
-- [ ] Run `pnpm --filter desktop test`.
-- [ ] Run `pnpm build`.
-- [ ] Manually verify a rule changes an outgoing proxied HTTP request.
-- [ ] Commit: `feat: add header rewrite rules UI`.
-
-Acceptance:
-
-- User can create, edit, delete, enable, and disable rules.
-- Invalid rules cannot be saved.
-- A matching enabled rule affects proxied HTTP requests.
-- Traffic log identifies matched rules.
-
-## Milestone 10: Settings And Persistence
-
-- [ ] Decide persistence location using Tauri app data directory.
-- [ ] Add backend persistence for proxy port.
-- [ ] Add backend persistence for rewrite rules.
-- [ ] Add backend persistence for traffic retention limit.
-- [ ] Create `apps/desktop/src/features/settings/SettingsView.tsx`.
-- [ ] Add proxy port input with validation.
-- [ ] Add traffic retention setting.
-- [ ] Add privacy defaults explanation.
-- [ ] Add tests for settings form validation.
-- [ ] Wire Settings section into `App.tsx`.
-- [ ] Run `pnpm --filter desktop test`.
-- [ ] Run `cargo test --workspace`.
-- [ ] Restart app manually and verify saved settings/rules reload.
-- [ ] Commit: `feat: persist settings and rules`.
-
-Acceptance:
-
-- Rules survive app restart.
-- Proxy port survives app restart.
-- Invalid ports cannot be saved.
-- Traffic history remains in-memory only.
-
-## Milestone 11: Security And Onboarding Documentation
-
-- [ ] Create `docs/security/local-proxy.md`.
-- [ ] Document what the proxy captures by default.
-- [ ] Document what the proxy does not capture in MVP.
-- [ ] Document HTTPS `CONNECT` metadata behavior.
-- [ ] Document that HTTPS body decryption is not implemented.
-- [ ] Document that header rewrite only affects traffic routed through the local proxy.
-- [ ] Create first-run UI copy explaining manual proxy configuration.
-- [ ] Add a link or help panel from Traffic UI to the proxy instructions.
-- [ ] Commit: `docs: document proxy privacy model`.
-
-Acceptance:
-
-- User can understand how to configure a browser manually.
-- User can understand the privacy boundary before enabling capture.
-- No UI copy implies system-wide interception.
-
-## Milestone 12: Local Build And Smoke QA
-
-- [ ] Run `pnpm test`.
-- [ ] Run `cargo test --workspace`.
-- [ ] Run `pnpm build`.
-- [ ] Run `cargo check --workspace`.
-- [ ] Run Tauri dev app.
-- [ ] Smoke test Dashboard.
-- [ ] Smoke test proxy start/stop.
-- [ ] Smoke test plain HTTP request capture.
-- [ ] Smoke test HTTPS `CONNECT` metadata logging.
-- [ ] Smoke test header add rule.
-- [ ] Smoke test header replace rule.
-- [ ] Smoke test header remove rule.
-- [ ] Smoke test settings persistence after app restart.
-- [ ] Fix any blocking defects found by smoke QA.
-- [ ] Commit fixes with focused messages.
-
-Acceptance:
-
-- All automated checks pass.
-- Manual smoke path verifies the MVP claim.
-- Remaining limitations are documented.
-
-## Post-MVP Backlog
-
-- [ ] Evaluate HTTPS interception design with explicit CA generation and trust-store flow.
-- [ ] Evaluate Chrome extension for browser-native request-header modification.
-- [ ] Evaluate Safari Web Extension packaging and Apple signing requirements.
-- [ ] Evaluate system proxy switching as an opt-in helper.
-- [ ] Evaluate Network Extension transparent proxy mode.
-- [ ] Add traffic export.
-- [ ] Add persistent traffic history with masking and retention controls.
-- [ ] Add menu bar status item.
-- [ ] Add app icon, signing, notarization, and release packaging.
-
-## Execution Order
-
-1. Milestone 0: Workspace Foundation.
-2. Milestone 1: Tauri React Desktop Shell.
-3. Milestone 2: App Navigation And Base UI.
-4. Milestone 3: System Information Backend.
-5. Milestone 4: System Information Dashboard.
-6. Milestone 5: Proxy Domain And Rewrite Engine.
-7. Milestone 6: Proxy Server MVP.
-8. Milestone 7: Proxy Tauri Commands And Events.
-9. Milestone 8: Traffic UI.
-10. Milestone 9: Header Rules UI.
-11. Milestone 10: Settings And Persistence.
-12. Milestone 11: Security And Onboarding Documentation.
-13. Milestone 12: Local Build And Smoke QA.
-
-## Verification Commands
-
-Run these before claiming the MVP complete:
+## 范围
+
+版本 0.1 包含：
+
+- 桌面应用脚手架。
+- 仪表盘、流量、请求头规则、设置的侧边栏/详情布局。
+- 本机系统信息快照。
+- 本地手动配置代理服务。
+- 内存中的流量日志。
+- 对代理流量生效的请求头改写规则。
+- 基础设置和规则持久化。
+- 抓包与改写行为的安全说明文档。
+
+版本 0.1 不包含：
+
+- 自动切换系统代理。
+- HTTPS 请求体解密。
+- 自动安装 root CA。
+- Safari 或 Chrome 扩展打包。
+- Network Extension 透明代理模式。
+- 完整 packet capture。
+- 持久化流量历史。
+
+## 目标文件结构
+
+- `package.json`：根目录脚本。
+- `pnpm-workspace.yaml`：JavaScript 工作区。
+- `Cargo.toml`：Rust 工作区。
+- `apps/desktop`：Tauri + React 应用。
+- `apps/desktop/src/app`：应用级导航和状态。
+- `apps/desktop/src/components`：共享 UI 组件。
+- `apps/desktop/src/features/dashboard`：本机信息仪表盘。
+- `apps/desktop/src/features/traffic`：代理控制、流量表格、请求详情。
+- `apps/desktop/src/features/rules`：请求头改写规则编辑器。
+- `apps/desktop/src/features/settings`：偏好设置 UI。
+- `apps/desktop/src/lib`：类型化 Tauri API client 和格式化工具。
+- `apps/desktop/src-tauri`：Tauri 后端。
+- `crates/system-info`：系统快照提供模块。
+- `crates/proxy-core`：代理模型、代理服务、流量存储、改写引擎。
+- `docs/security`：本地抓包、隐私、信任边界说明。
+
+## 里程碑 0：Workspace 基础
+
+- [ ] 创建根目录 `package.json`，包含脚本：`dev`、`build`、`test`、`test:ui`、`test:rust`、`tauri`。
+- [ ] 创建 `pnpm-workspace.yaml`，包含 `apps/*`。
+- [ ] 创建根目录 `Cargo.toml` 工作区，包含 `apps/desktop/src-tauri`、`crates/system-info`、`crates/proxy-core`。
+- [ ] 创建 `.gitignore`，忽略 `node_modules`、`dist`、`target`、`.env*`、`.DS_Store`。
+- [ ] 用 `pnpm --version` 验证包管理器。
+- [ ] 如果 `pnpm` 不可用，通过 Corepack 启用。
+- [ ] 提交：`chore: add workspace foundation`。
+
+验收标准：
+
+- 根目录工作区文件存在。
+- 提交后 `git status` 没有与基础工作区相关的未提交变更。
+
+## 里程碑 1：Tauri React 桌面壳
+
+- [ ] 创建 `apps/desktop/package.json`，加入 Vite、React、TypeScript、Tauri API、Vitest、Testing Library 依赖。
+- [ ] 创建 `apps/desktop/index.html`。
+- [ ] 创建 `apps/desktop/vite.config.ts`，使用端口 `1420`。
+- [ ] 创建 `apps/desktop/tsconfig.json`，启用严格 TypeScript 配置。
+- [ ] 创建 `apps/desktop/src/main.tsx`。
+- [ ] 创建初始 `apps/desktop/src/App.tsx`。
+- [ ] 创建 `apps/desktop/src/styles.css`，实现桌面侧边栏布局。
+- [ ] 创建 `apps/desktop/src-tauri/Cargo.toml`。
+- [ ] 创建 `apps/desktop/src-tauri/tauri.conf.json`。
+- [ ] 创建 `apps/desktop/src-tauri/src/main.rs`。
+- [ ] 创建 `apps/desktop/src-tauri/src/lib.rs`，包含 `app_version` 命令。
+- [ ] 运行 `pnpm install`。
+- [ ] 运行 `pnpm build`。
+- [ ] 运行 `cargo check --workspace`。
+- [ ] 提交：`feat: scaffold Tauri desktop shell`。
+
+验收标准：
+
+- 前端能构建。
+- Rust 后端能检查通过。
+- 本地运行时，Tauri 壳能显示初始窗口。
+
+## 里程碑 2：应用导航和基础 UI
+
+- [ ] 创建 `apps/desktop/src/app/navigation.ts`，包含 section id：`dashboard`、`traffic`、`rules`、`settings`。
+- [ ] 添加导航单元测试，验证 section 顺序。
+- [ ] 用导航模型渲染侧边栏，替换硬编码按钮。
+- [ ] 在 `App.tsx` 中添加当前选中页面状态。
+- [ ] 为非仪表盘页面添加临时内容。
+- [ ] 添加小窗口下的响应式布局 CSS。
+- [ ] 运行 `pnpm --filter desktop test`。
+- [ ] 运行 `pnpm build`。
+- [ ] 提交：`feat: add app navigation`。
+
+验收标准：
+
+- 点击侧边栏能切换可见页面。
+- 导航顺序符合 MVP 设计。
+- UI 在配置的最小窗口尺寸下仍可用。
+
+## 里程碑 3：本机信息后端
+
+- [ ] 创建 `crates/system-info/Cargo.toml`。
+- [ ] 创建 `crates/system-info/src/lib.rs`。
+- [ ] 定义 `SystemSnapshot`，包含 OS 名称、OS 版本、kernel 版本、host 名、CPU 名称、CPU 核心数、总内存、已用内存、磁盘容量、可用磁盘、网络接口数量。
+- [ ] 实现 `collect_system_snapshot()`。
+- [ ] 添加 Rust 测试，证明 CPU 核心数、内存、OS 名称已填充。
+- [ ] 把 `system-info` 加为 `apps/desktop/src-tauri` 的依赖。
+- [ ] 暴露 `system_snapshot` Tauri 命令。
+- [ ] 运行 `cargo test -p system-info`。
+- [ ] 运行 `cargo check --workspace`。
+- [ ] 提交：`feat: add system information backend`。
+
+验收标准：
+
+- `system-info` 测试通过。
+- Tauri 后端带新命令能编译。
+- 快照字段能干净序列化到前端。
+
+## 里程碑 4：本机信息仪表盘
+
+- [ ] 创建 `apps/desktop/src/lib/systemInfo.ts`，包含前端类型、DTO 映射、`loadSystemSnapshot()`、字节格式化。
+- [ ] 创建 `apps/desktop/src/features/dashboard/SystemDashboard.tsx`。
+- [ ] 添加仪表盘卡片渲染测试。
+- [ ] 在 `App.tsx` 中接入仪表盘加载流程。
+- [ ] 添加加载态和错误态。
+- [ ] 添加仪表盘卡片样式。
+- [ ] 运行 `pnpm --filter desktop test`。
+- [ ] 运行 `pnpm build`。
+- [ ] 运行应用，视觉确认仪表盘数据出现。
+- [ ] 提交：`feat: add system dashboard`。
+
+验收标准：
+
+- 仪表盘显示 host、OS、CPU、内存、磁盘、网络信息。
+- 加载态和错误态清晰可见。
+- 测试和构建通过。
+
+## 里程碑 5：代理领域模型和改写引擎
+
+- [ ] 创建 `crates/proxy-core/Cargo.toml`。
+- [ ] 创建 `crates/proxy-core/src/lib.rs`。
+- [ ] 创建 `crates/proxy-core/src/traffic.rs`，包含 `TrafficEntry`、`TrafficStatus`、请求头 map、时间戳、耗时、命中规则 id。
+- [ ] 创建 `crates/proxy-core/src/rules.rs`，包含 `HeaderRule`、`RuleMatcher`、`HeaderMutation`、`RuleSet`。
+- [ ] 实现 host 精确匹配、host 包含匹配、path 前缀匹配、path 包含匹配。
+- [ ] 实现请求头添加、替换、删除。
+- [ ] 添加 Rust 单元测试覆盖 host 匹配。
+- [ ] 添加 Rust 单元测试覆盖 path 匹配。
+- [ ] 添加 Rust 单元测试覆盖添加、替换、删除请求头。
+- [ ] 运行 `cargo test -p proxy-core`。
+- [ ] 提交：`feat: add proxy rewrite engine`。
+
+验收标准：
+
+- 规则匹配行为确定。
+- 请求头改写行为先有测试覆盖，再接入代理服务。
+- 代理网络代码不依赖 UI 类型。
+
+## 里程碑 6：代理服务 MVP
+
+- [ ] 给 `proxy-core` 添加 async runtime 依赖。
+- [ ] 实现绑定到 `127.0.0.1` 的本地 HTTP 代理服务。
+- [ ] 实现启动和停止 handle。
+- [ ] 记录请求 method、URL、host、path、请求头、时间戳、命中规则 id。
+- [ ] 转发普通 HTTP 请求。
+- [ ] 可用时记录响应 status、响应头、耗时。
+- [ ] 对 HTTPS `CONNECT` 只记录 tunnel 元数据，不解密内容。
+- [ ] 添加有界内存 `TrafficStore`。
+- [ ] 使用本地 HTTP test server 添加集成测试。
+- [ ] 添加测试，证明改写后的请求头到达上游 HTTP server。
+- [ ] 运行 `cargo test -p proxy-core`。
+- [ ] 提交：`feat: add local proxy server`。
+
+验收标准：
+
+- 普通 HTTP 流量可以经过代理。
+- HTTPS tunnel 尝试会被记录，但不解密请求体。
+- Header 规则能修改匹配的代理 HTTP 请求。
+- 流量存储有数量上限。
+
+## 里程碑 7：代理 Tauri Commands 和事件
+
+- [ ] 把 `proxy-core` 加为 `apps/desktop/src-tauri` 的依赖。
+- [ ] 添加后端应用状态：代理状态、设置、规则、流量存储。
+- [ ] 暴露 `proxy_status` 命令。
+- [ ] 暴露带可配置本地端口的 `start_proxy` 命令。
+- [ ] 暴露 `stop_proxy` 命令。
+- [ ] 暴露 `list_traffic` 命令。
+- [ ] 暴露 `clear_traffic` 命令。
+- [ ] 暴露 `list_rules`、`save_rule`、`delete_rule`、`toggle_rule` 命令。
+- [ ] 抓到新请求时向前端 emit traffic event。
+- [ ] 在可行范围内添加 Rust 测试覆盖命令级状态转换。
+- [ ] 运行 `cargo test --workspace`。
+- [ ] 运行 `cargo check --workspace`。
+- [ ] 提交：`feat: expose proxy commands`。
+
+验收标准：
+
+- 代理可以通过 Tauri 命令启动和停止。
+- 前端可以获取流量条目。
+- 规则命令能安全修改后端状态。
+
+## 里程碑 8：流量 UI
+
+- [ ] 创建 `apps/desktop/src/lib/proxyApi.ts`，包含类型化 Tauri client 函数。
+- [ ] 创建 `apps/desktop/src/features/traffic/TrafficView.tsx`。
+- [ ] 创建 `apps/desktop/src/features/traffic/ProxyControls.tsx`。
+- [ ] 创建 `apps/desktop/src/features/traffic/TrafficTable.tsx`。
+- [ ] 创建 `apps/desktop/src/features/traffic/TrafficDetail.tsx`。
+- [ ] 添加空流量状态渲染测试。
+- [ ] 添加测试覆盖选中一行流量并展示详情。
+- [ ] 添加启动/停止代理按钮。
+- [ ] 添加清空流量按钮。
+- [ ] 添加按 host、method、URL 搜索/过滤。
+- [ ] 订阅后端 traffic event。
+- [ ] 将流量页面接入 `App.tsx`。
+- [ ] 运行 `pnpm --filter desktop test`。
+- [ ] 运行 `pnpm build`。
+- [ ] 手动运行应用，配置浏览器代理，验证请求行出现。
+- [ ] 提交：`feat: add traffic capture UI`。
+
+验收标准：
+
+- 用户可以从 UI 启动和停止本地代理。
+- 浏览器手动走代理后，请求行会出现。
+- 选中请求行后能展示请求头和元数据。
+- 清空操作会删除当前内存流量。
+
+## 里程碑 9：请求头规则 UI
+
+- [ ] 创建 `apps/desktop/src/lib/rulesApi.ts`。
+- [ ] 创建 `apps/desktop/src/features/rules/RulesView.tsx`。
+- [ ] 创建 `apps/desktop/src/features/rules/RuleEditor.tsx`。
+- [ ] 创建 `apps/desktop/src/features/rules/RuleList.tsx`。
+- [ ] 添加测试覆盖创建规则草稿。
+- [ ] 添加测试覆盖校验：规则名非空、matcher 存在、请求头名非空。
+- [ ] 添加测试覆盖启用和禁用规则。
+- [ ] 实现创建、编辑、删除、启用/禁用交互。
+- [ ] 在流量详情中显示命中的规则名或 id。
+- [ ] 运行 `pnpm --filter desktop test`。
+- [ ] 运行 `pnpm build`。
+- [ ] 手动验证某条规则会修改经过代理的 HTTP 请求。
+- [ ] 提交：`feat: add header rewrite rules UI`。
+
+验收标准：
+
+- 用户可以创建、编辑、删除、启用、禁用规则。
+- 无效规则不能保存。
+- 匹配且启用的规则会影响代理 HTTP 请求。
+- 流量日志能识别命中的规则。
+
+## 里程碑 10：设置与持久化
+
+- [ ] 使用 Tauri app data directory 作为持久化位置。
+- [ ] 添加代理端口后端持久化。
+- [ ] 添加改写规则后端持久化。
+- [ ] 添加流量保留上限后端持久化。
+- [ ] 创建 `apps/desktop/src/features/settings/SettingsView.tsx`。
+- [ ] 添加代理端口输入和校验。
+- [ ] 添加流量保留设置。
+- [ ] 添加隐私默认行为说明。
+- [ ] 添加设置表单校验测试。
+- [ ] 将设置页面接入 `App.tsx`。
+- [ ] 运行 `pnpm --filter desktop test`。
+- [ ] 运行 `cargo test --workspace`。
+- [ ] 手动重启应用，验证设置和规则能重新加载。
+- [ ] 提交：`feat: persist settings and rules`。
+
+验收标准：
+
+- 规则在应用重启后仍存在。
+- 代理端口在应用重启后仍存在。
+- 无效端口不能保存。
+- 流量历史仍然只存在内存中。
+
+## 里程碑 11：安全与引导文档
+
+- [ ] 创建 `docs/security/local-proxy.md`。
+- [ ] 文档说明代理默认捕获什么。
+- [ ] 文档说明 MVP 不捕获什么。
+- [ ] 文档说明 HTTPS `CONNECT` 元数据行为。
+- [ ] 文档说明 HTTPS 请求体解密尚未实现。
+- [ ] 文档说明请求头改写只影响经过本地代理的流量。
+- [ ] 创建首次运行 UI 文案，解释如何手动配置代理。
+- [ ] 在流量 UI 中添加指向代理说明的链接或帮助面板。
+- [ ] 提交：`docs: document proxy privacy model`。
+
+验收标准：
+
+- 用户能理解如何手动配置浏览器代理。
+- 用户在启用抓包前能理解隐私边界。
+- UI 文案不会暗示系统级全局拦截。
+
+## 里程碑 12：本地构建和冒烟 QA
+
+- [ ] 运行 `pnpm test`。
+- [ ] 运行 `cargo test --workspace`。
+- [ ] 运行 `pnpm build`。
+- [ ] 运行 `cargo check --workspace`。
+- [ ] 运行 Tauri dev app。
+- [ ] 冒烟测试仪表盘。
+- [ ] 冒烟测试代理启动/停止。
+- [ ] 冒烟测试普通 HTTP 请求捕获。
+- [ ] 冒烟测试 HTTPS `CONNECT` 元数据记录。
+- [ ] 冒烟测试请求头添加规则。
+- [ ] 冒烟测试请求头替换规则。
+- [ ] 冒烟测试请求头删除规则。
+- [ ] 冒烟测试应用重启后的设置持久化。
+- [ ] 修复冒烟 QA 发现的阻塞问题。
+- [ ] 使用聚焦的 commit message 提交修复。
+
+验收标准：
+
+- 所有自动化检查通过。
+- 手动冒烟测试路径验证 MVP 声明成立。
+- 剩余限制已记录在文档中。
+
+## MVP 后续待办
+
+- [ ] 评估 HTTPS 拦截设计，包括显式 CA 生成和信任库流程。
+- [ ] 评估 Chrome 扩展，用于浏览器原生请求头修改。
+- [ ] 评估 Safari Web Extension 打包和 Apple 签名要求。
+- [ ] 评估系统代理切换作为 opt-in helper。
+- [ ] 评估 Network Extension 透明代理模式。
+- [ ] 添加流量导出。
+- [ ] 添加带脱敏和保留控制的持久化流量历史。
+- [ ] 添加菜单栏状态项。
+- [ ] 添加应用图标、签名、公证、发布打包。
+
+## 执行顺序
+
+1. 里程碑 0：Workspace 基础。
+2. 里程碑 1：Tauri React 桌面壳。
+3. 里程碑 2：应用导航和基础 UI。
+4. 里程碑 3：本机信息后端。
+5. 里程碑 4：本机信息仪表盘。
+6. 里程碑 5：代理领域模型和改写引擎。
+7. 里程碑 6：代理服务 MVP。
+8. 里程碑 7：代理 Tauri Commands 和事件。
+9. 里程碑 8：流量 UI。
+10. 里程碑 9：请求头规则 UI。
+11. 里程碑 10：设置与持久化。
+12. 里程碑 11：安全与引导文档。
+13. 里程碑 12：本地构建和冒烟 QA。
+
+## 验证命令
+
+在声明 MVP 完成前运行：
 
 ```bash
 pnpm test
@@ -364,10 +364,10 @@ pnpm build
 cargo check --workspace
 ```
 
-Manual verification must also cover:
+手动验证还必须覆盖：
 
-- Dashboard shows current system information.
-- Browser manually configured to the proxy creates traffic log entries.
-- Header rewrite rules affect matching proxied HTTP requests.
-- HTTPS requests are logged only as tunnel metadata unless a later HTTPS feature is explicitly added.
-- Settings and rules reload after restart.
+- 仪表盘显示当前系统信息。
+- 浏览器手动配置代理后，能生成流量日志条目。
+- 请求头改写规则会影响匹配的代理 HTTP 请求。
+- 除非后续显式加入 HTTPS 功能，否则 HTTPS 请求只记录 tunnel 元数据。
+- 设置和规则在重启后能重新加载。

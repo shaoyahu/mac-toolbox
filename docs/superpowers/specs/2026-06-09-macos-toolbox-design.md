@@ -1,162 +1,162 @@
-# macOS Toolbox App Design
+# macOS 全能工具箱 App 设计文档
 
-Date: 2026-06-09
-Status: Draft approved for implementation planning
+日期：2026-06-09
+状态：已确认，可进入实现计划阶段
 
-## Goal
+## 目标
 
-Build a macOS desktop toolbox app for developers and power users. The first product version should combine local machine visibility with request inspection and safe request-header rewriting, while keeping system-level proxy and browser-extension complexity out of the initial critical path.
+开发一个面向开发者和高阶用户的 macOS 桌面工具箱应用。第一版产品应同时具备本机信息查看、请求检查、以及安全的请求头改写能力，但不要一开始就进入系统级代理和浏览器扩展这类高复杂度方向。
 
-## Target User
+## 目标用户
 
-The primary user is a frontend or full-stack developer who wants one lightweight macOS utility for:
+主要用户是前端或全栈开发者，希望有一个轻量的 macOS 工具来完成：
 
-- Inspecting local device and system status.
-- Capturing browser or app HTTP traffic through a local proxy.
-- Creating request-header rewrite rules for debugging, testing, or environment switching.
+- 查看本机设备与系统状态。
+- 通过本地代理抓取浏览器或应用的 HTTP 流量。
+- 创建请求头改写规则，用于调试、测试或切换环境。
 
-## Recommended Stack
+## 推荐技术栈
 
-Use Tauri 2 with React and TypeScript for the desktop app shell and UI.
+桌面应用壳和界面使用 Tauri 2 + React + TypeScript。
 
-The frontend should stay in React because it matches the developer's existing experience and is well suited for data-heavy panels such as request tables, filters, charts, rule editors, and detail inspectors.
+前端继续使用 React，因为它符合当前开发者经验，也适合做请求表格、过滤器、图表、规则编辑器、详情检查器这类数据密集型界面。
 
-The desktop backend should use Rust through Tauri commands and sidecar processes. Rust is a good fit for long-running local services, local proxy code, process supervision, and structured communication with the UI.
+桌面后端通过 Tauri 命令和 sidecar 进程使用 Rust。Rust 适合长期运行的本地服务、本地代理、进程管理、以及与 UI 的结构化通信。
 
-Use Swift or Objective-C only where native macOS APIs are meaningfully easier or required, such as battery details, menu bar integration gaps, privileged helpers, certificate trust flows, or future Network Extension work.
+只有在原生 macOS API 明显更合适或必须使用时，才引入 Swift 或 Objective-C，例如电池详情、菜单栏能力缺口、特权 helper、证书信任流程、或后续 Network Extension。
 
-## Architecture
+## 架构
 
-The app should be split into these layers:
+应用拆成以下层：
 
-- `apps/desktop`: Tauri + React + TypeScript UI.
-- `crates/system-info`: system information provider exposed to the Tauri backend.
-- `crates/proxy-core`: local HTTP proxy, capture pipeline, and rewrite engine.
-- `extensions/chrome`: later optional Chrome extension for browser-native header rewrite.
-- `docs`: product, security, permission, and implementation notes.
+- `apps/desktop`：Tauri + React + TypeScript UI。
+- `crates/system-info`：本机信息采集模块，暴露给 Tauri 后端。
+- `crates/proxy-core`：本地 HTTP 代理、抓包流水线、请求头改写引擎。
+- `extensions/chrome`：后续可选的 Chrome 扩展，用于浏览器原生请求头改写。
+- `docs`：产品、安全、权限、实现说明。
 
-The React UI should not directly own platform details. It should call typed Tauri commands or subscribe to events. The Rust backend should normalize platform-specific data into stable app models.
+React UI 不直接处理平台细节。它只调用类型化的 Tauri 命令，或订阅后端事件。Rust 后端负责把平台相关数据整理成稳定的应用模型。
 
-## MVP Scope
+## MVP 范围
 
-Version 0.1 should include:
+版本 0.1 应包含：
 
-- A dashboard with system version, device model if available, CPU, memory, disk, network addresses, and battery status.
-- A local manually configured proxy server, for example `127.0.0.1:<port>`.
-- A request log with method, URL, host, status if available, duration, timestamp, and matched rule.
-- Request and response header inspection when technically available.
-- Basic request-header rewrite rules for traffic flowing through the app proxy.
-- App settings for proxy port, startup behavior, data retention, and rule enablement.
+- 仪表盘：系统版本、设备型号（可取到时）、CPU、内存、磁盘、网络地址、电池状态。
+- 本地手动配置代理服务，例如 `127.0.0.1:<port>`。
+- 请求日志：method、URL、host、可用时的 status、耗时、时间戳、命中的规则。
+- 技术上可用时展示请求头和响应头。
+- 对经过本应用代理的流量支持基础请求头改写规则。
+- 应用设置：代理端口、启动行为、数据保留、规则启用状态。
 
-Version 0.1 should not include:
+版本 0.1 不包含：
 
-- Automatic system-wide proxy switching.
-- HTTPS body decryption by default.
-- Installing a root CA certificate automatically.
-- Safari extension packaging.
-- Network Extension transparent proxy mode.
-- Full packet capture.
+- 自动切换系统全局代理。
+- 默认解密 HTTPS 请求体。
+- 自动安装 root CA 证书。
+- Safari 扩展打包。
+- Network Extension 透明代理模式。
+- 完整 packet capture。
 
-These exclusions keep the first version useful and shippable while avoiding the hardest macOS permission and trust workflows.
+这些排除项可以让第一版保持有用、可交付，同时避开最复杂的 macOS 权限和信任流程。
 
-## Feature Areas
+## 功能区域
 
-### System Information
+### 本机信息
 
-The system information module should expose read-only snapshots. The first implementation can collect common values through Rust crates and shell-safe system APIs, then move specific fields to native macOS APIs if accuracy requires it.
+本机信息模块应提供只读快照。第一版可以通过 Rust crate 和安全的系统 API 收集通用值；如果部分字段准确性不够，再迁移到原生 macOS API。
 
-Data should be refreshed on a timer controlled by the UI, not streamed constantly unless needed. Battery and network status can refresh more frequently than static hardware data.
+数据刷新应由 UI 控制定时器，而不是无脑持续流式推送。电池和网络状态可以比静态硬件信息刷新得更频繁。
 
-### Local Proxy Capture
+### 本地代理抓包
 
-The proxy should start and stop from inside the app. Users configure their browser or OS proxy manually for the MVP.
+代理应能在应用内启动和停止。MVP 中，用户手动把浏览器或系统代理配置到本地代理地址。
 
-The proxy should record metadata first. Capturing body content and decrypting HTTPS should be treated as separate opt-in features because they change privacy, storage, and certificate requirements.
+代理优先记录元数据。捕获请求体内容和解密 HTTPS 应作为单独的高级可选功能，因为它们会改变隐私、存储和证书要求。
 
-The request log should be append-only in memory for the first version, with a bounded retention limit. Persistent history can be added after the capture model is stable.
+第一版请求日志只保存在内存中，并设置有界保留数量。持久化历史可以等抓包模型稳定后再加。
 
-### Header Rewrite
+### 请求头改写
 
-The first rewrite engine should operate only on traffic passing through the app proxy. Rules should support:
+第一版改写引擎只作用于经过应用代理的流量。规则应支持：
 
-- Match by host substring or exact host.
-- Match by path prefix or substring.
-- Add, replace, or remove request headers.
-- Enable and disable individual rules.
+- 按 host 包含或精确匹配。
+- 按 path 前缀或包含匹配。
+- 添加、替换、删除请求头。
+- 启用和禁用单条规则。
 
-Browser-native request-header modification should be a later browser extension project. It has a different permission model and should not be mixed with the proxy MVP.
+浏览器原生请求头修改应作为后续浏览器扩展项目处理。它有不同的权限模型，不应混入代理 MVP。
 
-## UX Model
+## UX 模型
 
-Use a desktop-style sidebar and detail layout:
+使用桌面应用常见的侧边栏 + 详情布局：
 
-- Dashboard
-- Traffic
-- Header Rules
-- Settings
+- 仪表盘
+- 流量
+- 请求头规则
+- 设置
 
-The Traffic screen should behave like a developer tool: searchable table on the left or top, detail inspector on selection, and clear controls for start, stop, clear, and export.
+流量页面应像开发者工具一样工作：可搜索请求表格、选中后的详情检查器、清晰的启动、停止、清空、导出控制。
 
-The Header Rules screen should prioritize clarity and reversibility. Each rule should show whether it is enabled, what it matches, and what it changes.
+请求头规则页面应强调清晰和可逆。每条规则都应显示是否启用、匹配条件、以及它会修改什么。
 
-Settings should be a separate macOS settings scene or a clear settings screen depending on the final Tauri shell capabilities. Avoid hiding security-sensitive controls in secondary menus.
+设置可以根据最终 Tauri 壳能力选择独立 macOS 设置窗口或清晰的设置页面。安全敏感控制不要藏在二级菜单里。
 
-## Security And Trust
+## 安全与信任边界
 
-The app must make trust boundaries explicit:
+应用必须明确说明信任边界：
 
-- Local machine information is read-only.
-- Proxy capture is local-only unless explicitly exported.
-- Header rewrite only affects traffic routed through the local proxy in the MVP.
-- HTTPS decryption requires a separate design because it needs local CA generation, certificate installation, trust-store changes, and clear user consent.
+- 本机信息是只读的。
+- 代理抓包默认只在本地进行，除非用户显式导出。
+- MVP 中，请求头改写只影响经过本地代理的流量。
+- HTTPS 解密需要单独设计，因为它涉及本地 CA 生成、证书安装、信任库变更和明确用户同意。
 
-Avoid logging sensitive request bodies, cookies, authorization headers, or full payloads by default. If these are ever captured, provide masking and retention controls.
+默认不要记录敏感请求体、cookie、authorization 请求头或完整载荷。如果以后支持这些能力，必须提供脱敏和保留控制。
 
-## Implementation Phases
+## 实现阶段
 
-### Phase 1: App Shell And Dashboard
+### 阶段 1：应用壳与仪表盘
 
-Create the Tauri + React project, desktop layout, navigation, settings shell, and system info dashboard. This phase proves packaging, app startup, backend command calls, and basic UI conventions.
+创建 Tauri + React 项目、桌面布局、导航、设置壳、本机信息仪表盘。该阶段验证打包、应用启动、后端命令调用和基础 UI 约定。
 
-### Phase 2: Proxy Capture MVP
+### 阶段 2：代理抓包 MVP
 
-Add a Rust proxy sidecar or backend service with start/stop controls, request metadata capture, event streaming to the UI, and bounded in-memory traffic history.
+添加 Rust 代理 sidecar 或后端服务，支持启动/停止、请求元数据捕获、事件推送到 UI、有界内存流量历史。
 
-### Phase 3: Header Rule Engine
+### 阶段 3：请求头规则引擎
 
-Add match conditions, request-header mutations, rule persistence, and matched-rule display in the traffic log.
+添加匹配条件、请求头修改、规则持久化、以及流量日志中展示命中的规则。
 
-### Phase 4: HTTPS And Browser Integrations
+### 阶段 4：HTTPS 与浏览器集成
 
-Design HTTPS interception as an opt-in advanced feature. Separately evaluate Chrome/Safari extensions for browser-native header rewriting.
+将 HTTPS 拦截设计成明确 opt-in 的高级功能。单独评估 Chrome/Safari 扩展，用于浏览器原生请求头改写。
 
-### Phase 5: Polish And Distribution
+### 阶段 5：打磨与分发
 
-Add app icon, onboarding, first-run proxy instructions, signing, notarization, update strategy, and export/import of rules.
+添加应用图标、引导页、首次运行代理配置说明、签名、公证、更新策略、规则导入导出。
 
-## Testing Strategy
+## 测试策略
 
-Use layered validation:
+使用分层验证：
 
-- Frontend unit tests for rule editing and UI state.
-- Rust unit tests for rule matching and header mutation.
-- Integration tests for proxy start/stop and simple HTTP traffic capture.
-- Manual macOS smoke tests for app startup, permissions, settings, and proxy configuration instructions.
+- 前端单元测试覆盖规则编辑和 UI 状态。
+- Rust 单元测试覆盖规则匹配和请求头改写。
+- 集成测试覆盖代理启动/停止和简单 HTTP 流量捕获。
+- 手动 macOS 冒烟测试覆盖应用启动、权限、设置、代理配置说明。
 
-The proxy and rewrite engine should have tests before complex UI work depends on them.
+代理和规则引擎应先有测试，再让复杂 UI 依赖它们。
 
-## Open Decisions
+## 待决问题
 
-- Exact package manager: `pnpm` is recommended unless the developer already prefers `npm`.
-- UI component approach: start with custom lightweight components; add a component library only if needed.
-- Proxy implementation crate: choose during implementation planning after checking current Rust ecosystem options.
-- Data persistence: start with settings and rules only; defer persistent traffic history.
+- 包管理器：推荐 `pnpm`，除非开发者明确更偏向 `npm`。
+- UI 组件方案：先使用轻量自定义组件；只有确实需要时再引入组件库。
+- 代理实现 crate：实现计划阶段根据 Rust 生态现状选择。
+- 数据持久化：先只持久化设置和规则；流量历史持久化延后。
 
-## Acceptance Criteria For Version 0.1
+## 版本 0.1 验收标准
 
-- The macOS app launches from local development and production build.
-- The dashboard shows useful current system and battery information.
-- The proxy can be started and stopped from the UI.
-- A browser manually pointed to the proxy produces visible request log entries.
-- At least one enabled header rewrite rule can change a matching proxied request.
-- Sensitive capture behavior is documented and conservative by default.
+- macOS 应用能从本地开发环境和生产构建启动。
+- 仪表盘显示有用的当前系统和电池信息。
+- 代理可以从 UI 启动和停止。
+- 浏览器手动指向代理后，能看到请求日志。
+- 至少一条启用的请求头改写规则可以修改匹配的代理请求。
+- 敏感抓包行为有文档说明，并默认保守处理。
