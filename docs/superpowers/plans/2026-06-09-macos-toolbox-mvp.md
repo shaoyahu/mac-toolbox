@@ -148,17 +148,17 @@
 
 ## 里程碑 5：代理领域模型和改写引擎
 
-- [ ] 创建 `crates/proxy-core/Cargo.toml`。
-- [ ] 创建 `crates/proxy-core/src/lib.rs`。
-- [ ] 创建 `crates/proxy-core/src/traffic.rs`，包含 `TrafficEntry`、`TrafficStatus`、请求头 map、时间戳、耗时、命中规则 id。
-- [ ] 创建 `crates/proxy-core/src/rules.rs`，包含 `HeaderRule`、`RuleMatcher`、`HeaderMutation`、`RuleSet`。
-- [ ] 实现 host 精确匹配、host 包含匹配、path 前缀匹配、path 包含匹配。
-- [ ] 实现请求头添加、替换、删除。
-- [ ] 添加 Rust 单元测试覆盖 host 匹配。
-- [ ] 添加 Rust 单元测试覆盖 path 匹配。
-- [ ] 添加 Rust 单元测试覆盖添加、替换、删除请求头。
-- [ ] 运行 `cargo test -p proxy-core`。
-- [ ] 提交：`feat: add proxy rewrite engine`。
+- [x] 创建 `crates/proxy-core/Cargo.toml`。
+- [x] 创建 `crates/proxy-core/src/lib.rs`。
+- [x] 创建 `crates/proxy-core/src/traffic.rs`，包含 `TrafficEntry`、`TrafficStatus`、请求头 map、时间戳、耗时、命中规则 id。
+- [x] 创建 `crates/proxy-core/src/rules.rs`，包含 `HeaderRule`、`RuleMatcher`、`HeaderMutation`、`RuleSet`。
+- [x] 实现 host 精确匹配、host 包含匹配、path 前缀匹配、path 包含匹配。
+- [x] 实现请求头添加、替换、删除。
+- [x] 添加 Rust 单元测试覆盖 host 匹配。
+- [x] 添加 Rust 单元测试覆盖 path 匹配。
+- [x] 添加 Rust 单元测试覆盖添加、替换、删除请求头。
+- [x] 运行 `cargo test -p proxy-core`。
+- [x] 提交：`feat: add proxy rewrite engine`。
 
 验收标准：
 
