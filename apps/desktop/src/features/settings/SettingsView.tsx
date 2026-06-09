@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { SettingsSnapshot } from "../../lib/settingsApi";
+import { SettingsSnapshot, WindowPreset } from "../../lib/settingsApi";
 
 type SettingsViewProps = {
   settings: SettingsSnapshot;
@@ -9,6 +9,7 @@ type SettingsViewProps = {
 export function SettingsView({ settings, onSave }: SettingsViewProps) {
   const [proxyPort, setProxyPort] = useState(String(settings.proxyPort));
   const [trafficLimit, setTrafficLimit] = useState(String(settings.trafficLimit));
+  const [windowPreset, setWindowPreset] = useState<WindowPreset>(settings.windowPreset);
   const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(event: FormEvent) {
@@ -26,7 +27,7 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
     }
 
     setError(null);
-    onSave({ proxyPort: parsedPort, trafficLimit: parsedLimit });
+    onSave({ proxyPort: parsedPort, trafficLimit: parsedLimit, windowPreset });
   }
 
   return (
@@ -46,6 +47,18 @@ export function SettingsView({ settings, onSave }: SettingsViewProps) {
           value={trafficLimit}
           onChange={(event) => setTrafficLimit(event.target.value)}
         />
+      </label>
+      <label>
+        窗口分辨率
+        <select
+          value={windowPreset}
+          onChange={(event) => setWindowPreset(event.target.value as WindowPreset)}
+        >
+          <option value="compact">紧凑：960 x 640</option>
+          <option value="comfortable">标准：1120 x 760</option>
+          <option value="wide">宽屏：1280 x 800</option>
+          <option value="large">大屏：1440 x 900</option>
+        </select>
       </label>
       <div className="privacy-note">
         <strong>隐私默认行为</strong>

@@ -133,6 +133,7 @@ export function App() {
   const [settings, setSettings] = useState<SettingsSnapshot>({
     proxyPort: 9090,
     trafficLimit: 500,
+    windowPreset: "comfortable",
   });
 
   useEffect(() => {

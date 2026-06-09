@@ -6,7 +6,7 @@ use proxy_core::{
     traffic::TrafficEntry,
 };
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter, Manager, State};
+use tauri::{AppHandle, Emitter, LogicalSize, Manager, State};
 use tokio::{sync::Mutex, task::JoinHandle};
 
 #[derive(Default)]
@@ -26,6 +26,7 @@ struct RunningProxy {
 struct AppConfig {
     proxy_port: u16,
     traffic_limit: usize,
+    window_preset: WindowPreset,
     rules: Vec<HeaderRule>,
 }
 
@@ -34,7 +35,28 @@ impl Default for AppConfig {
         Self {
             proxy_port: 9090,
             traffic_limit: 500,
+            window_preset: WindowPreset::Comfortable,
             rules: Vec::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+enum WindowPreset {
+    Compact,
+    Comfortable,
+    Wide,
+    Large,
+}
+
+impl WindowPreset {
+    fn size(self) -> (f64, f64) {
+        match self {
+            Self::Compact => (960.0, 640.0),
+            Self::Comfortable => (1120.0, 760.0),
+            Self::Wide => (1280.0, 800.0),
+            Self::Large => (1440.0, 900.0),
         }
     }
 }
@@ -52,6 +74,7 @@ struct ProxyStatus {
 struct SettingsSnapshot {
     proxy_port: u16,
     traffic_limit: usize,
+    window_preset: WindowPreset,
 }
 
 #[tauri::command]
@@ -175,11 +198,13 @@ async fn get_settings(state: State<'_, BackendState>) -> Result<SettingsSnapshot
     Ok(SettingsSnapshot {
         proxy_port: config.proxy_port,
         traffic_limit: config.traffic_limit,
+        window_preset: config.window_preset,
     })
 }
 
 #[tauri::command]
 async fn save_settings(
+    app: AppHandle,
     state: State<'_, BackendState>,
     settings: SettingsSnapshot,
 ) -> Result<SettingsSnapshot, String> {
@@ -187,7 +212,9 @@ async fn save_settings(
     let mut config = state.config.lock().await;
     config.proxy_port = settings.proxy_port;
     config.traffic_limit = settings.traffic_limit;
+    config.window_preset = settings.window_preset;
     persist_config_state(&state, &config)?;
+    apply_window_preset(&app, settings.window_preset)?;
     Ok(settings)
 }
 
@@ -253,6 +280,17 @@ fn open_macos_url(url: &str) -> Result<(), String> {
         })
 }
 
+fn apply_window_preset(app: &AppHandle, preset: WindowPreset) -> Result<(), String> {
+    let Some(window) = app.get_webview_window("main") else {
+        return Ok(());
+    };
+    let (width, height) = preset.size();
+    window
+        .set_size(LogicalSize::new(width, height))
+        .map_err(|error| error.to_string())?;
+    window.center().map_err(|error| error.to_string())
+}
+
 fn load_config_from_path(path: &Path) -> AppConfig {
     fs::read_to_string(path)
         .ok()
@@ -285,6 +323,8 @@ pub fn run() {
                 .map_err(|error| Box::<dyn std::error::Error>::from(error))?
                 .join("config.json");
             let config = load_config_from_path(&config_path);
+            apply_window_preset(app.handle(), config.window_preset)
+                .map_err(Box::<dyn std::error::Error>::from)?;
             app.manage(BackendState {
                 proxy: Mutex::new(None),
                 config: Mutex::new(config),
@@ -354,6 +394,7 @@ mod tests {
         let config = AppConfig {
             proxy_port: 8080,
             traffic_limit: 250,
+            window_preset: WindowPreset::Wide,
             rules: Vec::new(),
         };
 

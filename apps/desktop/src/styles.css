@@ -22,7 +22,8 @@
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background:
     radial-gradient(circle at 8% 8%, rgba(122, 153, 113, 0.36), transparent 22rem),
     radial-gradient(circle at 92% 12%, rgba(238, 233, 198, 0.7), transparent 24rem),
@@ -36,7 +37,8 @@ button {
 .app-shell {
   display: grid;
   grid-template-columns: 15rem minmax(0, 1fr);
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   padding: clamp(0.9rem, 2vw, 1.35rem);
   gap: clamp(0.9rem, 2vw, 1.35rem);
 }
@@ -50,8 +52,11 @@ button {
 }
 
 .sidebar {
+  position: sticky;
+  top: clamp(0.9rem, 2vw, 1.35rem);
   display: flex;
   flex-direction: column;
+  height: calc(100vh - clamp(0.9rem, 2vw, 1.35rem) * 2);
   border-radius: 1.65rem;
   padding: 0.95rem;
 }
@@ -128,7 +133,8 @@ button {
 
 .content-panel {
   position: relative;
-  overflow: hidden;
+  overflow: auto;
+  height: calc(100vh - clamp(0.9rem, 2vw, 1.35rem) * 2);
   border-radius: 1.85rem;
   padding: clamp(2rem, 4.8vw, 4rem);
 }
@@ -553,7 +559,8 @@ button.traffic-row:hover {
 }
 
 .rule-editor input,
-.rule-editor select {
+.rule-editor select,
+.settings-form select {
   border: 1px solid rgba(37, 54, 42, 0.16);
   border-radius: 0.85rem;
   padding: 0.75rem;
@@ -628,7 +635,8 @@ button.traffic-row:hover {
   text-transform: uppercase;
 }
 
-.settings-form input {
+.settings-form input,
+.settings-form select {
   border: 1px solid rgba(37, 54, 42, 0.16);
   border-radius: 0.85rem;
   padding: 0.75rem;
@@ -661,12 +669,23 @@ button.traffic-row:hover {
 }
 
 @media (max-width: 760px) {
+  body {
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+
   .app-shell {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
     grid-template-columns: 1fr;
     padding: 0.6rem;
   }
 
   .sidebar {
+    position: static;
+    height: auto;
     gap: 1rem;
   }
 
@@ -681,6 +700,8 @@ button.traffic-row:hover {
   }
 
   .content-panel {
+    height: auto;
+    overflow: visible;
     border-radius: 1.35rem;
     padding: 1.5rem;
   }
