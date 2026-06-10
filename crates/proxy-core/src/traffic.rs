@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 
 pub type RequestHeaders = BTreeMap<String, String>;
+pub type ResponseHeaders = BTreeMap<String, String>;
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", tag = "kind", content = "value")]
@@ -22,6 +23,9 @@ pub struct TrafficEntry {
     pub host: String,
     pub path: String,
     pub request_headers: RequestHeaders,
+    pub request_body: Option<String>,
+    pub response_headers: ResponseHeaders,
+    pub response_body: Option<String>,
     pub status: TrafficStatus,
     pub started_at_epoch_ms: u128,
     pub duration_ms: Option<u128>,

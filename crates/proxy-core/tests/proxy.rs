@@ -32,6 +32,11 @@ async fn forwards_http_requests_and_records_traffic() {
     assert_eq!(entries[0].method, "GET");
     assert_eq!(entries[0].path, "/hello");
     assert_eq!(entries[0].status, TrafficStatus::Complete(204));
+    assert_eq!(
+        entries[0].response_headers.get("content-type"),
+        Some(&"application/json".to_string()),
+    );
+    assert_eq!(entries[0].response_body.as_deref(), Some("{\"ok\":true}"));
 
     proxy.stop().await;
 }
@@ -66,6 +71,102 @@ async fn rewrites_headers_before_forwarding_to_upstream() {
     assert!(!headers.contains("X-Mode: prod"));
     let entries = proxy.store().list().await;
     assert_eq!(entries[0].matched_rule_ids, vec!["debug".to_string()]);
+
+    proxy.stop().await;
+}
+
+#[tokio::test]
+async fn records_response_body_without_waiting_for_upstream_close() {
+    let upstream_port = start_keep_alive_upstream().await;
+    let proxy = start_proxy(ProxyConfig::default()).await.unwrap();
+
+    let response = send_raw_request(
+        proxy.addr().port(),
+        &format!(
+            "GET http://127.0.0.1:{upstream_port}/keep-alive HTTP/1.1\r\nHost: 127.0.0.1:{upstream_port}\r\n\r\n",
+        ),
+    )
+    .await;
+
+    assert!(response.starts_with("HTTP/1.1 200 OK"));
+    assert!(response.ends_with("{\"keepAlive\":true}"));
+
+    let entries = proxy.store().list().await;
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].status, TrafficStatus::Complete(200));
+    assert_eq!(
+        entries[0].response_headers.get("connection"),
+        Some(&"keep-alive".to_string()),
+    );
+    assert_eq!(entries[0].response_body.as_deref(), Some("{\"keepAlive\":true}"));
+
+    proxy.stop().await;
+}
+
+#[tokio::test]
+async fn skips_compressed_and_binary_response_body_display() {
+    let upstream_port = start_custom_response_upstream(
+        b"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Encoding: gzip\r\nContent-Length: 4\r\n\r\n\x1f\x8b\x08\x00",
+    )
+    .await;
+    let proxy = start_proxy(ProxyConfig::default()).await.unwrap();
+
+    let _ = send_raw_request(
+        proxy.addr().port(),
+        &format!(
+            "GET http://127.0.0.1:{upstream_port}/gzip HTTP/1.1\r\nHost: 127.0.0.1:{upstream_port}\r\n\r\n",
+        ),
+    )
+    .await;
+
+    let entries = proxy.store().list().await;
+    assert_eq!(entries[0].response_body, None);
+    proxy.stop().await;
+
+    let upstream_port = start_custom_response_upstream(
+        b"HTTP/1.1 200 OK\r\nContent-Type: image/png\r\nContent-Length: 4\r\n\r\n\x89PNG",
+    )
+    .await;
+    let proxy = start_proxy(ProxyConfig::default()).await.unwrap();
+
+    let _ = send_raw_request(
+        proxy.addr().port(),
+        &format!(
+            "GET http://127.0.0.1:{upstream_port}/image.png HTTP/1.1\r\nHost: 127.0.0.1:{upstream_port}\r\n\r\n",
+        ),
+    )
+    .await;
+
+    let entries = proxy.store().list().await;
+    assert_eq!(entries[0].response_body, None);
+    proxy.stop().await;
+}
+
+#[tokio::test]
+async fn forwards_post_body_and_records_request_body() {
+    let seen_headers = Arc::new(Mutex::new(String::new()));
+    let upstream_port = start_upstream(Arc::clone(&seen_headers)).await;
+    let proxy = start_proxy(ProxyConfig::default()).await.unwrap();
+    let body = "{\"name\":\"codex\"}";
+
+    let response = send_raw_request(
+        proxy.addr().port(),
+        &format!(
+            "POST http://127.0.0.1:{upstream_port}/users HTTP/1.1\r\nHost: 127.0.0.1:{upstream_port}\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{body}",
+            body.len(),
+        ),
+    )
+    .await;
+
+    assert!(response.starts_with("HTTP/1.1 204 No Content"));
+    let upstream_request = seen_headers.lock().await.clone();
+    assert!(upstream_request.contains("POST /users HTTP/1.1"));
+    assert!(upstream_request.ends_with(body));
+
+    let entries = proxy.store().list().await;
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].method, "POST");
+    assert_eq!(entries[0].request_body.as_deref(), Some(body));
 
     proxy.stop().await;
 }
@@ -142,17 +243,61 @@ async fn start_upstream(seen_headers: Arc<Mutex<String>>) -> u16 {
 
     tokio::spawn(async move {
         if let Ok((mut stream, _)) = listener.accept().await {
-            let mut buffer = [0_u8; 4096];
-            let read = stream.read(&mut buffer).await.unwrap();
-            *response_headers.lock().await = String::from_utf8_lossy(&buffer[..read]).to_string();
+            let request = read_full_http_message(&mut stream).await;
+            *response_headers.lock().await = request;
             stream
-                .write_all(b"HTTP/1.1 204 No Content\r\nContent-Length: 0\r\n\r\n")
+                .write_all(
+                    b"HTTP/1.1 204 No Content\r\nContent-Type: application/json\r\nContent-Length: 11\r\n\r\n{\"ok\":true}",
+                )
                 .await
                 .unwrap();
         }
     });
 
     port
+}
+
+async fn read_full_http_message(stream: &mut TcpStream) -> String {
+    let mut buffer = Vec::with_capacity(4096);
+    let mut chunk = [0_u8; 1024];
+
+    loop {
+        let read = stream.read(&mut chunk).await.unwrap();
+        if read == 0 {
+            break;
+        }
+        buffer.extend_from_slice(&chunk[..read]);
+        if buffer.windows(4).any(|window| window == b"\r\n\r\n") {
+            break;
+        }
+    }
+
+    let header_end = buffer
+        .windows(4)
+        .position(|window| window == b"\r\n\r\n")
+        .map(|index| index + 4)
+        .unwrap_or(buffer.len());
+    let expected_body_len = String::from_utf8_lossy(&buffer[..header_end])
+        .lines()
+        .skip(1)
+        .find_map(|line| {
+            let (name, value) = line.split_once(':')?;
+            if name.trim().eq_ignore_ascii_case("content-length") {
+                value.trim().parse::<usize>().ok()
+            } else {
+                None
+            }
+        })
+        .unwrap_or(0);
+    let current_body_len = buffer.len().saturating_sub(header_end);
+    let remaining = expected_body_len.saturating_sub(current_body_len);
+    if remaining > 0 {
+        let mut body = vec![0_u8; remaining];
+        stream.read_exact(&mut body).await.unwrap();
+        buffer.extend_from_slice(&body);
+    }
+
+    String::from_utf8_lossy(&buffer).to_string()
 }
 
 async fn start_tunnel_upstream() -> u16 {
@@ -164,6 +309,42 @@ async fn start_tunnel_upstream() -> u16 {
             let mut buffer = [0_u8; 1024];
             let read = stream.read(&mut buffer).await.unwrap();
             stream.write_all(&buffer[..read]).await.unwrap();
+        }
+    });
+
+    port
+}
+
+async fn start_keep_alive_upstream() -> u16 {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+
+    tokio::spawn(async move {
+        if let Ok((mut stream, _)) = listener.accept().await {
+            let mut buffer = [0_u8; 1024];
+            let _ = stream.read(&mut buffer).await.unwrap();
+            stream
+                .write_all(
+                    b"HTTP/1.1 200 OK\r\nConnection: keep-alive\r\nContent-Type: application/json\r\nContent-Length: 18\r\n\r\n{\"keepAlive\":true}",
+                )
+                .await
+                .unwrap();
+            tokio::time::sleep(std::time::Duration::from_millis(250)).await;
+        }
+    });
+
+    port
+}
+
+async fn start_custom_response_upstream(response: &'static [u8]) -> u16 {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+
+    tokio::spawn(async move {
+        if let Ok((mut stream, _)) = listener.accept().await {
+            let mut buffer = [0_u8; 1024];
+            let _ = stream.read(&mut buffer).await.unwrap();
+            stream.write_all(response).await.unwrap();
         }
     });
 

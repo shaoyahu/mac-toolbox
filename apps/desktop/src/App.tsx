@@ -75,10 +75,17 @@ function PageContent({
   const section = sections.find((item) => item.id === sectionId) ?? sections[0];
 
   return (
-    <section className="content-panel" aria-labelledby="app-title">
-      <p className="section-label">版本 0.1</p>
-      <h1 id="app-title">{section.title}</h1>
-      <p className="lede">{section.description}</p>
+    <section
+      className={
+        section.id === "traffic" ? "content-panel content-panel-compact" : "content-panel"
+      }
+      aria-labelledby="app-title"
+    >
+      <header className={section.id === "traffic" ? "page-heading page-heading-compact" : "page-heading"}>
+        <p className="section-label">版本 0.1</p>
+        <h1 id="app-title">{section.title}</h1>
+        <p className="lede">{section.description}</p>
+      </header>
       {section.id === "dashboard" && <DashboardState state={snapshotState} />}
       {section.id === "traffic" && (
         <TrafficView

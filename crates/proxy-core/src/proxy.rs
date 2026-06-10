@@ -17,7 +17,7 @@ use tokio::{
 
 use crate::{
     rules::{HeaderMap, RuleSet},
-    traffic::{TrafficEntry, TrafficStatus},
+    traffic::{ResponseHeaders, TrafficEntry, TrafficStatus},
 };
 
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
@@ -136,7 +136,7 @@ async fn handle_connection(
     rules: Arc<RuleSet>,
 ) -> std::io::Result<()> {
     let started = std::time::Instant::now();
-    let request = read_http_head(&mut client).await?;
+    let request = read_http_message(&mut client).await?;
     let Some(parsed) = ParsedRequest::parse(&request) else {
         client
             .write_all(b"HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\n\r\n")
@@ -156,7 +156,14 @@ async fn handle_connection(
     match upstream_result {
         Ok(response) => {
             let status = parse_response_status(&response).unwrap_or(0);
-            let entry = parsed.to_entry(TrafficStatus::Complete(status), matched_rule_ids, elapsed);
+            let (response_headers, response_body) = parse_response_parts(&response);
+            let entry = parsed.to_entry(
+                TrafficStatus::Complete(status),
+                matched_rule_ids,
+                elapsed,
+                response_headers,
+                response_body,
+            );
             store.push(entry).await;
             client.write_all(&response).await?;
         }
@@ -165,6 +172,8 @@ async fn handle_connection(
                 TrafficStatus::Failed(error.to_string()),
                 matched_rule_ids,
                 elapsed,
+                ResponseHeaders::new(),
+                None,
             );
             store.push(entry).await;
             client
@@ -189,7 +198,13 @@ async fn tunnel_connect(
             client
                 .write_all(b"HTTP/1.1 200 Connection Established\r\n\r\n")
                 .await?;
-            let entry = parsed.to_entry(TrafficStatus::Tunnel, Vec::new(), started.elapsed());
+            let entry = parsed.to_entry(
+                TrafficStatus::Tunnel,
+                Vec::new(),
+                started.elapsed(),
+                ResponseHeaders::new(),
+                None,
+            );
             store.push(entry).await;
             let _ = copy_bidirectional(&mut client, &mut upstream).await;
         }
@@ -198,6 +213,8 @@ async fn tunnel_connect(
                 TrafficStatus::Failed(error.to_string()),
                 Vec::new(),
                 started.elapsed(),
+                ResponseHeaders::new(),
+                None,
             );
             store.push(entry).await;
             client
@@ -209,7 +226,7 @@ async fn tunnel_connect(
     Ok(())
 }
 
-async fn read_http_head(stream: &mut TcpStream) -> std::io::Result<Vec<u8>> {
+async fn read_http_message(stream: &mut TcpStream) -> std::io::Result<Vec<u8>> {
     let mut buffer = Vec::with_capacity(4096);
     let mut chunk = [0_u8; 1024];
 
@@ -221,6 +238,17 @@ async fn read_http_head(stream: &mut TcpStream) -> std::io::Result<Vec<u8>> {
         buffer.extend_from_slice(&chunk[..read]);
         if buffer.windows(4).any(|window| window == b"\r\n\r\n") || buffer.len() > 64 * 1024 {
             break;
+        }
+    }
+
+    if let Some(expected_body_len) = content_length_from_message(&buffer) {
+        let header_len = header_len(&buffer).unwrap_or(buffer.len());
+        let current_body_len = buffer.len().saturating_sub(header_len);
+        let remaining = expected_body_len.saturating_sub(current_body_len);
+        if remaining > 0 {
+            let mut body = vec![0_u8; remaining];
+            stream.read_exact(&mut body).await?;
+            buffer.extend_from_slice(&body);
         }
     }
 
@@ -247,17 +275,112 @@ async fn forward_http_request(
     request.push_str("\r\n");
 
     upstream.write_all(request.as_bytes()).await?;
-    upstream.shutdown().await?;
+    if let Some(body) = parsed.body_bytes() {
+        upstream.write_all(body).await?;
+    }
 
-    let mut response = Vec::new();
-    upstream.read_to_end(&mut response).await?;
-    Ok(response)
+    read_http_message(&mut upstream).await
 }
 
 fn parse_response_status(response: &[u8]) -> Option<u16> {
     let text = std::str::from_utf8(response).ok()?;
     let status = text.lines().next()?.split_whitespace().nth(1)?;
     status.parse().ok()
+}
+
+fn parse_response_parts(response: &[u8]) -> (ResponseHeaders, Option<String>) {
+    let Some(header_end) = header_end(response) else {
+        return (ResponseHeaders::new(), None);
+    };
+    let header_bytes = &response[..header_end];
+    let body_bytes = &response[(header_end + 4)..];
+    let header_text = String::from_utf8_lossy(header_bytes);
+    let mut headers = ResponseHeaders::new();
+
+    for line in header_text.lines().skip(1) {
+        let Some((name, value)) = line.split_once(':') else {
+            continue;
+        };
+        headers.insert(name.trim().to_ascii_lowercase(), value.trim().to_string());
+    }
+
+    let body = displayable_response_body(&headers, body_bytes);
+
+    (headers, body)
+}
+
+fn displayable_response_body(headers: &ResponseHeaders, body_bytes: &[u8]) -> Option<String> {
+    if body_bytes.is_empty() || has_non_identity_content_encoding(headers) {
+        return None;
+    }
+
+    let content_type = headers
+        .get("content-type")
+        .map(|value| value.to_ascii_lowercase())
+        .unwrap_or_default();
+    if !is_textual_content_type(&content_type) {
+        return None;
+    }
+
+    std::str::from_utf8(body_bytes)
+        .ok()
+        .map(ToString::to_string)
+}
+
+fn has_non_identity_content_encoding(headers: &ResponseHeaders) -> bool {
+    headers
+        .get("content-encoding")
+        .map(|encoding| {
+            encoding
+                .split(',')
+                .map(str::trim)
+                .any(|encoding| !encoding.is_empty() && !encoding.eq_ignore_ascii_case("identity"))
+        })
+        .unwrap_or(false)
+}
+
+fn is_textual_content_type(content_type: &str) -> bool {
+    let media_type = content_type
+        .split(';')
+        .next()
+        .unwrap_or("")
+        .trim();
+
+    media_type.starts_with("text/")
+        || matches!(
+            media_type,
+            "application/json"
+                | "application/ld+json"
+                | "application/javascript"
+                | "application/x-javascript"
+                | "application/xml"
+                | "application/x-www-form-urlencoded"
+                | "image/svg+xml"
+        )
+        || media_type.ends_with("+json")
+        || media_type.ends_with("+xml")
+}
+
+fn header_end(message: &[u8]) -> Option<usize> {
+    message.windows(4).position(|window| window == b"\r\n\r\n")
+}
+
+fn header_len(message: &[u8]) -> Option<usize> {
+    header_end(message).map(|end| end + 4)
+}
+
+fn content_length_from_message(message: &[u8]) -> Option<usize> {
+    let header_end = header_end(message)?;
+    let header_text = String::from_utf8_lossy(&message[..header_end]);
+
+    header_text.lines().skip(1).find_map(|line| {
+        let (name, value) = line.split_once(':')?;
+        if name.trim().eq_ignore_ascii_case("content-length") {
+            value.trim().parse().ok()
+        } else {
+            None
+        }
+    })
 }
 
 #[derive(Debug, Clone)]
@@ -268,11 +391,13 @@ struct ParsedRequest {
     port: u16,
     path: String,
     headers: HeaderMap,
+    body: Vec<u8>,
 }
 
 impl ParsedRequest {
     fn parse(bytes: &[u8]) -> Option<Self> {
-        let request = std::str::from_utf8(bytes).ok()?;
+        let header_len = header_len(bytes)?;
+        let request = std::str::from_utf8(&bytes[..header_len]).ok()?;
         let mut lines = request.split("\r\n");
         let request_line = lines.next()?;
         let mut request_parts = request_line.split_whitespace();
@@ -299,9 +424,11 @@ impl ParsedRequest {
                 port,
                 path: String::new(),
                 headers,
+                body: Vec::new(),
             });
         }
 
+        let body = bytes[header_len..].to_vec();
         let (host, port, path, url) = parse_http_target(&target, &headers)?;
         Some(Self {
             method,
@@ -310,7 +437,16 @@ impl ParsedRequest {
             port,
             path,
             headers,
+            body,
         })
+    }
+
+    fn body_bytes(&self) -> Option<&[u8]> {
+        if self.body.is_empty() {
+            None
+        } else {
+            Some(&self.body)
+        }
     }
 
     fn to_entry(
@@ -318,6 +454,8 @@ impl ParsedRequest {
         status: TrafficStatus,
         matched_rule_ids: Vec<String>,
         duration: Duration,
+        response_headers: ResponseHeaders,
+        response_body: Option<String>,
     ) -> TrafficEntry {
         TrafficEntry {
             id: NEXT_ID.fetch_add(1, Ordering::Relaxed).to_string(),
@@ -326,6 +464,11 @@ impl ParsedRequest {
             host: self.host.clone(),
             path: self.path.clone(),
             request_headers: self.headers.clone(),
+            request_body: self
+                .body_bytes()
+                .map(|body| String::from_utf8_lossy(body).to_string()),
+            response_headers,
+            response_body,
             status,
             started_at_epoch_ms: now_epoch_ms(),
             duration_ms: Some(duration.as_millis()),

@@ -7,13 +7,22 @@ type TrafficDetailProps = {
   rules?: HeaderRule[];
 };
 
-type DetailTab = "summary" | "raw" | "headers" | "body" | "cookies";
+type DetailTab =
+  | "summary"
+  | "raw"
+  | "requestHeaders"
+  | "requestBody"
+  | "responseHeaders"
+  | "responseBody"
+  | "cookies";
 
 const detailTabs: Array<{ id: DetailTab; label: string }> = [
   { id: "summary", label: "总览" },
   { id: "raw", label: "原始" },
-  { id: "headers", label: "请求头" },
-  { id: "body", label: "请求体" },
+  { id: "requestHeaders", label: "请求头" },
+  { id: "requestBody", label: "请求体" },
+  { id: "responseHeaders", label: "响应头" },
+  { id: "responseBody", label: "响应体" },
   { id: "cookies", label: "Cookies" },
 ];
 
@@ -42,6 +51,7 @@ export function TrafficDetail({ entry, rules = [] }: TrafficDetailProps) {
     (ruleId) => rules.find((rule) => rule.id === ruleId)?.name ?? ruleId,
   );
   const requestHeaderEntries = Object.entries(entry.requestHeaders);
+  const responseHeaderEntries = Object.entries(entry.responseHeaders);
   const cookies = parseCookies(entry.requestHeaders.cookie);
 
   return (
@@ -57,7 +67,8 @@ export function TrafficDetail({ entry, rules = [] }: TrafficDetailProps) {
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
-            {tab.id === "headers" ? `(${requestHeaderEntries.length})` : null}
+            {tab.id === "requestHeaders" ? `(${requestHeaderEntries.length})` : null}
+            {tab.id === "responseHeaders" ? `(${responseHeaderEntries.length})` : null}
             {tab.id === "cookies" ? `(${cookies.length})` : null}
           </button>
         ))}
@@ -69,10 +80,23 @@ export function TrafficDetail({ entry, rules = [] }: TrafficDetailProps) {
       {activeTab === "raw" ? (
         <RawPanel entry={entry} requestHeaderEntries={requestHeaderEntries} />
       ) : null}
-      {activeTab === "headers" ? (
+      {activeTab === "requestHeaders" ? (
         <HeaderPanel requestHeaderEntries={requestHeaderEntries} />
       ) : null}
-      {activeTab === "body" ? <BodyPanel /> : null}
+      {activeTab === "requestBody" ? (
+        <BodyPanel kind="request" body={entry.requestBody} />
+      ) : null}
+      {activeTab === "responseHeaders" ? (
+        <KeyValuePanel
+          entries={responseHeaderEntries}
+          emptyName="empty"
+          emptyValue="没有响应头"
+          label="响应头列表"
+        />
+      ) : null}
+      {activeTab === "responseBody" ? (
+        <BodyPanel kind="response" body={entry.responseBody} />
+      ) : null}
       {activeTab === "cookies" ? <CookiePanel cookies={cookies} /> : null}
     </aside>
   );
@@ -156,10 +180,31 @@ function HeaderPanel({
   requestHeaderEntries: Array<[string, string]>;
 }) {
   return (
-    <section className="capture-tab-panel" aria-label="请求头列表">
+    <KeyValuePanel
+      entries={requestHeaderEntries}
+      emptyName="empty"
+      emptyValue="没有请求头"
+      label="请求头列表"
+    />
+  );
+}
+
+function KeyValuePanel({
+  entries,
+  emptyName,
+  emptyValue,
+  label,
+}: {
+  entries: Array<[string, string]>;
+  emptyName: string;
+  emptyValue: string;
+  label: string;
+}) {
+  return (
+    <section className="capture-tab-panel" aria-label={label}>
       <div className="capture-header-grid">
-        {requestHeaderEntries.length > 0 ? (
-          requestHeaderEntries.map(([name, value]) => (
+        {entries.length > 0 ? (
+          entries.map(([name, value]) => (
             <div className="capture-header-row" key={name}>
               <span>{name}</span>
               <code>{value}</code>
@@ -167,8 +212,8 @@ function HeaderPanel({
           ))
         ) : (
           <div className="capture-header-row">
-            <span>empty</span>
-            <code>没有请求头</code>
+            <span>{emptyName}</span>
+            <code>{emptyValue}</code>
           </div>
         )}
       </div>
@@ -176,11 +221,24 @@ function HeaderPanel({
   );
 }
 
-function BodyPanel() {
+function BodyPanel({ kind, body }: { kind: "request" | "response"; body: string | null }) {
+  if (body) {
+    return (
+      <section className="capture-tab-panel" aria-label={kind === "request" ? "请求体" : "响应体"}>
+        <pre className="capture-raw-block">{body}</pre>
+      </section>
+    );
+  }
+
   return (
-    <section className="capture-tab-panel capture-empty-panel" aria-label="请求体">
-      <strong>当前代理记录暂未包含请求体</strong>
-      <p>后续如果代理核心记录 body，可在这里展示文本、JSON 或二进制摘要。</p>
+    <section
+      className="capture-tab-panel capture-empty-panel"
+      aria-label={kind === "request" ? "请求体" : "响应体"}
+    >
+      <strong>
+        {kind === "request" ? "当前请求没有可展示的请求体" : "当前响应没有可展示的响应体"}
+      </strong>
+      <p>{kind === "request" ? "GET、CONNECT 或空 body 请求会显示为空态。" : "空响应、压缩响应或二进制内容会显示为空态。"}</p>
     </section>
   );
 }

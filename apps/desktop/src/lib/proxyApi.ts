@@ -24,6 +24,9 @@ export type TrafficEntry = {
   host: string;
   path: string;
   requestHeaders: Record<string, string>;
+  requestBody: string | null;
+  responseHeaders: Record<string, string>;
+  responseBody: string | null;
   status: TrafficStatus;
   startedAtEpochMs: number;
   durationMs: number | null;

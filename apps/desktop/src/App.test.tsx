@@ -60,6 +60,9 @@ const capturedEntry: TrafficEntry = {
   requestHeaders: {
     host: "example.test:443",
   },
+  requestBody: null,
+  responseHeaders: {},
+  responseBody: null,
   status: { kind: "tunnel" },
   startedAtEpochMs: 1_700_000_000_000,
   durationMs: 3,

@@ -389,7 +389,7 @@ pub fn run() {
 mod tests {
     use super::{
         load_config_from_path, proxy_status_from_addr, proxy_status_from_guard,
-        save_config_to_path, validate_settings, AppConfig,
+        save_config_to_path, validate_settings, AppConfig, WindowPreset,
     };
 
     #[test]

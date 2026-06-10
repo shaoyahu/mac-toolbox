@@ -28,18 +28,22 @@ export function TrafficView({
 }: TrafficViewProps) {
   const [selectedId, setSelectedId] = useState<string | null>(entries[0]?.id ?? null);
   const [query, setQuery] = useState("");
+  const [hideStaticAssets, setHideStaticAssets] = useState(true);
 
   const filteredEntries = useMemo(() => {
     const normalized = query.trim().toLowerCase();
-    if (!normalized) {
-      return entries;
-    }
-    return entries.filter((entry) =>
-      [entry.host, entry.method, entry.url].some((value) =>
+    return entries.filter((entry) => {
+      if (hideStaticAssets && isStaticAssetRequest(entry)) {
+        return false;
+      }
+      if (!normalized) {
+        return true;
+      }
+      return [entry.host, entry.method, entry.url].some((value) =>
         value.toLowerCase().includes(normalized),
-      ),
-    );
-  }, [entries, query]);
+      );
+    });
+  }, [entries, hideStaticAssets, query]);
   const selectedEntry =
     filteredEntries.find((entry) => entry.id === selectedId) ?? filteredEntries[0] ?? null;
 
@@ -53,14 +57,24 @@ export function TrafficView({
         onOpenSettings={onOpenSettings}
         onCopyProxyAddress={onCopyProxyAddress}
       />
-      <label className="traffic-search">
-        搜索流量
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="按主机、方法或 URL 过滤"
-        />
-      </label>
+      <div className="traffic-filter-bar">
+        <label className="traffic-search">
+          搜索流量
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="按主机、方法或 URL 过滤"
+          />
+        </label>
+        <label className="traffic-filter-toggle">
+          <input
+            type="checkbox"
+            checked={hideStaticAssets}
+            onChange={(event) => setHideStaticAssets(event.target.checked)}
+          />
+          隐藏静态资源请求
+        </label>
+      </div>
       <div className="traffic-layout">
         <TrafficTable
           entries={filteredEntries}
@@ -71,4 +85,53 @@ export function TrafficView({
       </div>
     </div>
   );
+}
+
+const staticAssetExtensions = new Set([
+  "avif",
+  "bmp",
+  "css",
+  "eot",
+  "gif",
+  "ico",
+  "jpeg",
+  "jpg",
+  "js",
+  "map",
+  "mjs",
+  "otf",
+  "png",
+  "svg",
+  "ttf",
+  "webp",
+  "woff",
+  "woff2",
+]);
+
+function isStaticAssetRequest(entry: TrafficEntry) {
+  const pathname = pathFromEntry(entry).toLowerCase();
+  const extension = pathname.split("/").pop()?.split(".").pop();
+  if (extension && staticAssetExtensions.has(extension)) {
+    return true;
+  }
+
+  const contentType = entry.responseHeaders["content-type"]?.toLowerCase() ?? "";
+  return (
+    contentType.startsWith("image/") ||
+    contentType.startsWith("font/") ||
+    contentType.includes("text/css") ||
+    contentType.includes("javascript")
+  );
+}
+
+function pathFromEntry(entry: TrafficEntry) {
+  if (entry.path) {
+    return entry.path.split("?")[0];
+  }
+
+  try {
+    return new URL(entry.url).pathname;
+  } catch {
+    return entry.url.split("?")[0];
+  }
 }

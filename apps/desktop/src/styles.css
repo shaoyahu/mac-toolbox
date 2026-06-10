@@ -9,7 +9,8 @@
   --panel: rgba(250, 251, 242, 0.84);
   --panel-strong: rgba(255, 255, 249, 0.92);
   --line: rgba(35, 53, 39, 0.12);
-  --shadow: 0 28px 80px rgba(45, 60, 43, 0.14);
+  --shadow: 0 18px 48px rgba(45, 60, 43, 0.12);
+  font-size: 14px;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -36,12 +37,12 @@ button {
 
 .app-shell {
   display: grid;
-  grid-template-columns: 15rem minmax(0, 1fr);
+  grid-template-columns: 11.5rem minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
   height: 100vh;
   overflow: hidden;
-  padding: clamp(0.9rem, 2vw, 1.35rem);
-  gap: clamp(0.9rem, 2vw, 1.35rem);
+  padding: clamp(0.5rem, 1.2vw, 0.85rem);
+  gap: clamp(0.5rem, 1.2vw, 0.85rem);
 }
 
 .sidebar,
@@ -55,19 +56,19 @@ button {
 .sidebar {
   grid-row: 1 / 3;
   position: sticky;
-  top: clamp(0.9rem, 2vw, 1.35rem);
+  top: clamp(0.5rem, 1.2vw, 0.85rem);
   display: flex;
   flex-direction: column;
-  height: calc(100vh - clamp(0.9rem, 2vw, 1.35rem) * 2);
-  border-radius: 1.65rem;
-  padding: 0.95rem;
+  height: calc(100vh - clamp(0.5rem, 1.2vw, 0.85rem) * 2);
+  border-radius: 0.95rem;
+  padding: 0.55rem;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.8rem 0.72rem 0.95rem;
+  gap: 0.55rem;
+  padding: 0.48rem 0.46rem 0.55rem;
 }
 
 .brand strong,
@@ -77,20 +78,20 @@ button {
 
 .brand strong {
   color: var(--ink);
-  font-size: 0.96rem;
+  font-size: 0.82rem;
   letter-spacing: -0.01em;
 }
 
 .brand span {
-  margin-top: 0.2rem;
+  margin-top: 0.12rem;
   color: var(--muted);
-  font-size: 0.76rem;
+  font-size: 0.66rem;
 }
 
 .brand-mark {
-  width: 2.15rem;
-  height: 2.15rem;
-  border-radius: 0.78rem;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 0.52rem;
   background:
     radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.22), transparent 30%),
     linear-gradient(135deg, #1a3c2c, #6b8759),
@@ -102,17 +103,18 @@ button {
 
 .nav-list {
   display: grid;
-  gap: 0.45rem;
-  margin-top: 1.55rem;
+  gap: 0.24rem;
+  margin-top: 0.8rem;
 }
 
 .nav-item {
   width: 100%;
   border: 0;
-  border-radius: 0.9rem;
-  padding: 0.72rem 0.8rem;
+  border-radius: 0.58rem;
+  padding: 0.46rem 0.55rem;
   color: #52604f;
   background: transparent;
+  font-size: 0.78rem;
   text-align: left;
   cursor: pointer;
   transition:
@@ -137,8 +139,15 @@ button {
   position: relative;
   overflow: auto;
   min-height: 0;
-  border-radius: 1.85rem;
-  padding: clamp(2rem, 4.8vw, 4rem);
+  border-radius: 1.05rem;
+  padding: clamp(1rem, 2.2vw, 1.65rem);
+}
+
+.content-panel-compact {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  padding: clamp(0.62rem, 1.25vw, 0.9rem);
 }
 
 .content-panel::before {
@@ -153,12 +162,43 @@ button {
 
 .section-label {
   position: relative;
-  margin: 0 0 1rem;
+  margin: 0 0 0.45rem;
   color: #74816d;
-  font-size: 0.76rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+.page-heading {
+  position: relative;
+}
+
+.page-heading-compact {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  min-width: 0;
+  margin-bottom: 0.5rem;
+}
+
+.page-heading-compact .section-label {
+  margin: 0;
+}
+
+.page-heading-compact h1 {
+  flex: 0 0 auto;
+  font-size: 1.02rem;
+  letter-spacing: -0.02em;
+}
+
+.page-heading-compact .lede {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 h1 {
@@ -166,30 +206,30 @@ h1 {
   max-width: 12em;
   margin: 0;
   color: var(--ink);
-  font-size: clamp(2.1rem, 4vw, 3.35rem);
-  line-height: 1.08;
-  letter-spacing: -0.045em;
+  font-size: clamp(1.35rem, 2.4vw, 2.05rem);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
   text-wrap: balance;
 }
 
 .lede {
   position: relative;
   max-width: 42rem;
-  margin: 1.05rem 0 0;
+  margin: 0.55rem 0 0;
   color: var(--muted);
-  font-size: clamp(0.98rem, 1.45vw, 1.12rem);
-  line-height: 1.8;
+  font-size: clamp(0.78rem, 1vw, 0.9rem);
+  line-height: 1.55;
 }
 
 .app-footer {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.34rem;
   overflow-x: auto;
   border: 1px solid rgba(37, 54, 42, 0.12);
-  border-radius: 1.1rem;
-  padding: 0.72rem 0.9rem;
+  border-radius: 0.7rem;
+  padding: 0.42rem 0.55rem;
   background: rgba(250, 251, 242, 0.78);
   box-shadow: 0 16px 42px rgba(45, 60, 43, 0.1);
   color: #5d6a59;
@@ -200,65 +240,66 @@ h1 {
 .app-footer span {
   display: inline-flex;
   align-items: center;
-  min-height: 1.7rem;
+  min-height: 1.18rem;
   border-radius: 999px;
-  padding: 0.24rem 0.62rem;
+  padding: 0.14rem 0.42rem;
   background: rgba(37, 54, 42, 0.07);
-  font-size: 0.78rem;
+  font-size: 0.66rem;
 }
 
 .placeholder-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin-top: clamp(2rem, 6vw, 5rem);
+  gap: 0.65rem;
+  margin-top: clamp(1rem, 3vw, 2rem);
 }
 
 .placeholder-grid article {
-  min-height: 12rem;
-  border-radius: 1.35rem;
-  padding: 1.2rem;
+  min-height: 7.5rem;
+  border-radius: 0.85rem;
+  padding: 0.75rem;
   background: rgba(255, 255, 255, 0.52);
   border: 1px solid rgba(37, 54, 42, 0.1);
 }
 
 .placeholder-grid span {
   color: #708768;
-  font-size: 0.78rem;
+  font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.12em;
 }
 
 .placeholder-grid h2 {
-  margin: 2.8rem 0 0.65rem;
-  font-size: 1.1rem;
+  margin: 1.4rem 0 0.35rem;
+  font-size: 0.88rem;
 }
 
 .placeholder-grid p {
   margin: 0;
   color: #5c6a59;
-  line-height: 1.5;
+  font-size: 0.74rem;
+  line-height: 1.38;
 }
 
 .dashboard-grid {
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(0.85rem, 1.6vw, 1.15rem);
-  max-width: 46rem;
-  margin-top: clamp(2rem, 4.2vw, 3.5rem);
+  gap: clamp(0.55rem, 1vw, 0.78rem);
+  max-width: 38rem;
+  margin-top: clamp(1rem, 2.4vw, 1.8rem);
 }
 
 .metric-card {
   position: relative;
   display: flex;
-  min-height: 10rem;
+  min-height: 6.8rem;
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
   border: 1px solid rgba(35, 53, 39, 0.1);
-  border-radius: 1.15rem;
-  padding: 1rem;
+  border-radius: 0.78rem;
+  padding: 0.68rem;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(249, 251, 243, 0.72)),
     rgba(255, 255, 255, 0.62);
@@ -269,10 +310,10 @@ h1 {
 
 .metric-card::after {
   position: absolute;
-  right: -2.2rem;
-  bottom: -2.4rem;
-  width: 6.4rem;
-  height: 6.4rem;
+  right: -1.7rem;
+  bottom: -1.8rem;
+  width: 4.7rem;
+  height: 4.7rem;
   border-radius: 999px;
   content: "";
   opacity: 0.28;
@@ -306,20 +347,20 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.6rem;
+  gap: 0.38rem;
 }
 
 .metric-card span {
   color: #75876d;
-  font-size: 0.72rem;
+  font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .metric-card i {
-  width: 0.55rem;
-  height: 0.55rem;
+  width: 0.42rem;
+  height: 0.42rem;
   border-radius: 999px;
   background: #8aa17f;
   box-shadow: 0 0 0 0.32rem rgba(138, 161, 127, 0.14);
@@ -329,10 +370,10 @@ h1 {
   position: relative;
   display: block;
   z-index: 1;
-  margin-top: 1.4rem;
+  margin-top: 0.75rem;
   overflow-wrap: anywhere;
   color: var(--ink);
-  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-size: clamp(0.95rem, 1.35vw, 1.18rem);
   line-height: 1.08;
   letter-spacing: -0.045em;
 }
@@ -340,18 +381,18 @@ h1 {
 .metric-card p {
   position: relative;
   z-index: 1;
-  margin: 0.65rem 0 0;
+  margin: 0.36rem 0 0;
   color: var(--muted);
-  font-size: 0.9rem;
-  line-height: 1.55;
+  font-size: 0.72rem;
+  line-height: 1.36;
 }
 
 .status-panel {
   display: grid;
   place-items: center;
-  min-height: 16rem;
-  margin-top: clamp(2rem, 6vw, 5rem);
-  border-radius: 1.35rem;
+  min-height: 10rem;
+  margin-top: clamp(1rem, 3vw, 2rem);
+  border-radius: 0.85rem;
   background: rgba(255, 255, 255, 0.52);
   color: #536151;
 }
@@ -364,39 +405,44 @@ h1 {
 .empty-state {
   display: grid;
   place-items: center;
-  min-height: 20rem;
-  margin-top: clamp(2rem, 6vw, 5rem);
+  min-height: 12rem;
+  margin-top: clamp(1rem, 3vw, 2rem);
   border: 1px dashed rgba(37, 54, 42, 0.24);
-  border-radius: 1.5rem;
+  border-radius: 0.9rem;
   color: #60705e;
   text-align: center;
 }
 
 .empty-state span {
   color: #25362a;
-  font-size: 0.78rem;
+  font-size: 0.66rem;
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .empty-state p {
-  margin: 0.6rem 0 0;
+  margin: 0.35rem 0 0;
+  font-size: 0.74rem;
 }
 
 .compact {
-  min-height: 18rem;
+  min-height: 10rem;
   margin-top: 0;
 }
 
 .traffic-view {
   display: grid;
-  gap: 1rem;
-  margin-top: clamp(2rem, 6vw, 4rem);
+  min-height: 0;
+  gap: 0.55rem;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  margin-top: 0;
+  font-size: 0.78rem;
 }
 
 .traffic-toolbar,
-.traffic-search {
+.traffic-search,
+.traffic-filter-bar {
   border: 1px solid rgba(37, 54, 42, 0.1);
   border-radius: 1.2rem;
   background: rgba(255, 255, 255, 0.58);
@@ -406,8 +452,9 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 0.65rem;
+  padding: 0.52rem 0.65rem;
+  border-radius: 0.65rem;
 }
 
 .status-dot {
@@ -425,25 +472,27 @@ h1 {
 
 .proxy-help {
   max-width: 42rem;
-  margin: 0.45rem 0 0;
+  margin: 0.2rem 0 0;
   color: #5c6a59;
-  line-height: 1.45;
+  font-size: 0.72rem;
+  line-height: 1.35;
 }
 
 .toolbar-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 0.6rem;
+  gap: 0.35rem;
 }
 
 .toolbar-actions button {
   border: 0;
-  border-radius: 0.8rem;
-  padding: 0.7rem 0.9rem;
+  border-radius: 0.45rem;
+  padding: 0.42rem 0.62rem;
   color: #f8f5e8;
   background: #25362a;
   cursor: pointer;
+  font-size: 0.74rem;
 }
 
 .toolbar-actions .secondary-action {
@@ -451,36 +500,67 @@ h1 {
   background: rgba(37, 54, 42, 0.1);
 }
 
+.traffic-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  align-items: end;
+  padding: 0.48rem 0.6rem;
+  border-radius: 0.65rem;
+}
+
 .traffic-search {
   display: grid;
-  gap: 0.45rem;
-  padding: 1rem;
+  gap: 0.28rem;
+  padding: 0;
   color: #667361;
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  background: transparent;
+  border: 0;
 }
 
 .traffic-search input {
   width: 100%;
   border: 1px solid rgba(37, 54, 42, 0.16);
-  border-radius: 0.85rem;
-  padding: 0.8rem;
+  border-radius: 0.48rem;
+  padding: 0.45rem 0.55rem;
   color: #17201b;
   background: rgba(255, 255, 255, 0.72);
   font: inherit;
+  font-size: 0.74rem;
   letter-spacing: 0;
   text-transform: none;
 }
 
+.traffic-filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  min-height: 2.08rem;
+  color: #25362a;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.traffic-filter-toggle input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #548257;
+}
+
 .traffic-layout {
   display: grid;
-  grid-template-columns: minmax(20rem, 1.05fr) minmax(24rem, 1fr);
-  min-height: 34rem;
+  grid-template-columns: minmax(20rem, 1.05fr) minmax(23rem, 1fr);
+  min-height: 0;
   overflow: hidden;
   border: 1px solid rgba(37, 54, 42, 0.12);
-  border-radius: 1.35rem;
+  border-radius: 0.7rem;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.66), rgba(243, 247, 235, 0.42)),
     rgba(250, 251, 242, 0.66);
@@ -499,7 +579,11 @@ h1 {
 .traffic-row {
   display: grid;
   width: 100%;
-  grid-template-columns: 3.5rem 3rem 5rem minmax(15rem, 1fr);
+  grid-template-columns:
+    var(--traffic-col-id, 3.2rem)
+    var(--traffic-col-icon, 2.35rem)
+    var(--traffic-col-method, 4.2rem)
+    minmax(15rem, 1fr);
   gap: 0;
   border: 0;
   border-top: 1px solid rgba(37, 54, 42, 0.08);
@@ -513,21 +597,52 @@ h1 {
   display: flex;
   min-width: 0;
   align-items: center;
-  min-height: 1.85rem;
+  min-height: 1.35rem;
   border-right: 1px solid rgba(37, 54, 42, 0.08);
-  padding: 0.22rem 0.7rem;
+  padding: 0.12rem 0.48rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .traffic-row-head {
+  position: sticky;
+  z-index: 2;
+  top: 0;
   border-top: 0;
   color: #667361;
-  background: rgba(37, 54, 42, 0.08);
-  font-size: 0.72rem;
+  background: rgba(235, 240, 226, 0.96);
+  font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.02em;
+  backdrop-filter: blur(16px);
+}
+
+.traffic-head-cell {
+  position: relative;
+}
+
+.traffic-column-resizer {
+  position: absolute;
+  top: 0;
+  right: -0.18rem;
+  bottom: 0;
+  z-index: 3;
+  width: 0.36rem;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: col-resize;
+}
+
+.traffic-column-resizer::after {
+  position: absolute;
+  top: 24%;
+  right: 0.15rem;
+  bottom: 24%;
+  width: 1px;
+  background: rgba(37, 54, 42, 0.24);
+  content: "";
 }
 
 button.traffic-row {
@@ -549,7 +664,7 @@ button.traffic-row:hover {
 
 .capture-icon {
   color: #548257;
-  font-size: 0.9rem;
+  font-size: 0.76rem;
 }
 
 .capture-method {
@@ -584,12 +699,12 @@ button.traffic-row:hover {
 .capture-subtabs span,
 .capture-subtabs strong {
   border: 0;
-  border-bottom: 3px solid transparent;
-  padding: 0.75rem 0.95rem 0.62rem;
+  border-bottom: 2px solid transparent;
+  padding: 0.42rem 0.62rem 0.34rem;
   color: #667361;
   background: transparent;
   font: inherit;
-  font-size: 0.86rem;
+  font-size: 0.74rem;
   font-weight: 800;
   white-space: nowrap;
 }
@@ -609,10 +724,10 @@ button.traffic-row:hover {
 }
 
 .capture-url-line {
-  padding: 0.95rem;
+  padding: 0.55rem 0.65rem;
   overflow-wrap: anywhere;
   color: #25362a;
-  font-size: 0.95rem;
+  font-size: 0.8rem;
 }
 
 .capture-url-line span:first-child {
@@ -631,7 +746,7 @@ button.traffic-row:hover {
 .capture-summary dl div,
 .capture-header-row {
   display: grid;
-  grid-template-columns: minmax(10rem, 0.55fr) minmax(12rem, 1fr);
+  grid-template-columns: minmax(9rem, 0.52fr) minmax(12rem, 1fr);
   min-width: 0;
   border-top: 1px solid rgba(37, 54, 42, 0.1);
 }
@@ -643,7 +758,7 @@ button.traffic-row:hover {
   min-width: 0;
   margin: 0;
   border-right: 1px solid rgba(37, 54, 42, 0.1);
-  padding: 0.62rem 0.85rem;
+  padding: 0.38rem 0.58rem;
   overflow-wrap: anywhere;
 }
 
@@ -673,23 +788,24 @@ button.traffic-row:hover {
 
 .capture-raw-block {
   margin: 0;
-  min-height: 18rem;
-  padding: 1rem;
+  min-height: 15rem;
+  padding: 0.65rem;
   overflow: auto;
   color: #25362a;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.64), rgba(228, 236, 219, 0.34)),
     rgba(255, 255, 249, 0.42);
   font-family: "SFMono-Regular", "Menlo", "Consolas", monospace;
-  line-height: 1.65;
+  font-size: 0.74rem;
+  line-height: 1.45;
   white-space: pre-wrap;
 }
 
 .capture-empty-panel {
   display: grid;
   place-items: center;
-  min-height: 18rem;
-  padding: 2rem;
+  min-height: 15rem;
+  padding: 1.2rem;
   color: #5c6a59;
   text-align: center;
 }
@@ -707,8 +823,8 @@ button.traffic-row:hover {
 .capture-empty-detail {
   display: grid;
   place-items: center;
-  min-height: 27rem;
-  padding: 2rem;
+  min-height: 20rem;
+  padding: 1.2rem;
   color: #5c6a59;
   text-align: center;
 }
@@ -720,30 +836,31 @@ button.traffic-row:hover {
 
 .rules-view {
   display: grid;
-  grid-template-columns: minmax(18rem, 0.8fr) minmax(0, 1.2fr);
-  gap: 1rem;
-  margin-top: clamp(2rem, 6vw, 4rem);
+  grid-template-columns: minmax(15rem, 0.74fr) minmax(0, 1.26fr);
+  gap: 0.65rem;
+  margin-top: clamp(1rem, 2.4vw, 1.8rem);
+  font-size: 0.78rem;
 }
 
 .rule-editor,
 .rule-card {
   border: 1px solid rgba(37, 54, 42, 0.1);
-  border-radius: 1.2rem;
+  border-radius: 0.78rem;
   background: rgba(255, 255, 255, 0.58);
 }
 
 .rule-editor {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.52rem;
   align-content: start;
-  padding: 1rem;
+  padding: 0.68rem;
 }
 
 .rule-editor label {
   display: grid;
-  gap: 0.4rem;
+  gap: 0.24rem;
   color: #667361;
-  font-size: 0.78rem;
+  font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -753,11 +870,12 @@ button.traffic-row:hover {
 .rule-editor select,
 .settings-form select {
   border: 1px solid rgba(37, 54, 42, 0.16);
-  border-radius: 0.85rem;
-  padding: 0.75rem;
+  border-radius: 0.48rem;
+  padding: 0.42rem 0.5rem;
   color: #17201b;
   background: rgba(255, 255, 255, 0.72);
   font: inherit;
+  font-size: 0.74rem;
   letter-spacing: 0;
   text-transform: none;
 }
@@ -765,67 +883,72 @@ button.traffic-row:hover {
 .rule-editor button,
 .rule-actions button {
   border: 0;
-  border-radius: 0.8rem;
-  padding: 0.7rem 0.9rem;
+  border-radius: 0.48rem;
+  padding: 0.42rem 0.6rem;
   color: #f8f5e8;
   background: #25362a;
   cursor: pointer;
+  font-size: 0.74rem;
 }
 
 .form-error {
-  margin: -0.35rem 0 0;
+  margin: -0.2rem 0 0;
   color: #8b2f28;
+  font-size: 0.72rem;
 }
 
 .form-success {
-  margin: -0.35rem 0 0;
+  margin: -0.2rem 0 0;
   color: #3f6f45;
+  font-size: 0.72rem;
 }
 
 .rule-list {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.46rem;
 }
 
 .rule-card {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 0.65rem;
+  padding: 0.64rem;
 }
 
 .rule-card strong {
   display: block;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.22rem;
 }
 
 .rule-card p {
   margin: 0;
   color: #5c6a59;
+  font-size: 0.72rem;
 }
 
 .rule-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.32rem;
 }
 
 .settings-form {
   display: grid;
-  gap: 1rem;
-  max-width: 42rem;
-  margin-top: clamp(2rem, 6vw, 4rem);
+  gap: 0.62rem;
+  max-width: 32rem;
+  margin-top: clamp(1rem, 2.4vw, 1.8rem);
   border: 1px solid rgba(37, 54, 42, 0.1);
-  border-radius: 1.2rem;
-  padding: 1rem;
+  border-radius: 0.78rem;
+  padding: 0.72rem;
   background: rgba(255, 255, 255, 0.58);
+  font-size: 0.78rem;
 }
 
 .settings-form label {
   display: grid;
-  gap: 0.4rem;
+  gap: 0.24rem;
   color: #667361;
-  font-size: 0.78rem;
+  font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -834,22 +957,24 @@ button.traffic-row:hover {
 .settings-form input,
 .settings-form select {
   border: 1px solid rgba(37, 54, 42, 0.16);
-  border-radius: 0.85rem;
-  padding: 0.75rem;
+  border-radius: 0.48rem;
+  padding: 0.42rem 0.5rem;
   color: #17201b;
   background: rgba(255, 255, 255, 0.72);
   font: inherit;
+  font-size: 0.74rem;
   letter-spacing: 0;
 }
 
 .settings-form button {
   justify-self: start;
   border: 0;
-  border-radius: 0.8rem;
-  padding: 0.7rem 0.9rem;
+  border-radius: 0.48rem;
+  padding: 0.42rem 0.6rem;
   color: #f8f5e8;
   background: #25362a;
   cursor: pointer;
+  font-size: 0.74rem;
 }
 
 .settings-form button:disabled {
@@ -858,15 +983,16 @@ button.traffic-row:hover {
 }
 
 .privacy-note {
-  border-radius: 1rem;
-  padding: 1rem;
+  border-radius: 0.64rem;
+  padding: 0.62rem;
   background: rgba(37, 54, 42, 0.08);
 }
 
 .privacy-note p {
-  margin: 0.4rem 0 0;
+  margin: 0.24rem 0 0;
   color: #5c6a59;
-  line-height: 1.55;
+  font-size: 0.72rem;
+  line-height: 1.38;
 }
 
 @media (max-width: 760px) {
@@ -882,14 +1008,14 @@ button.traffic-row:hover {
     overflow: visible;
     grid-template-columns: 1fr;
     grid-template-rows: auto;
-    padding: 0.6rem;
+    padding: 0.45rem;
   }
 
   .sidebar {
     grid-row: auto;
     position: static;
     height: auto;
-    gap: 1rem;
+    gap: 0.55rem;
   }
 
   .nav-list {
@@ -905,8 +1031,8 @@ button.traffic-row:hover {
   .content-panel {
     height: auto;
     overflow: visible;
-    border-radius: 1.35rem;
-    padding: 1.5rem;
+    border-radius: 0.9rem;
+    padding: 0.9rem;
   }
 
   .app-footer {
@@ -916,12 +1042,12 @@ button.traffic-row:hover {
   }
 
   h1 {
-    font-size: clamp(1.9rem, 9vw, 2.65rem);
+    font-size: clamp(1.25rem, 7vw, 1.8rem);
     letter-spacing: -0.04em;
   }
 
   .nav-item {
-    padding: 0.75rem;
+    padding: 0.48rem 0.55rem;
   }
 
   .traffic-toolbar,
@@ -936,22 +1062,22 @@ button.traffic-row:hover {
   }
 
   .traffic-layout {
-    min-height: 28rem;
+    min-height: 24rem;
   }
 
   .traffic-table {
-    min-height: 14rem;
+    min-height: 12rem;
     border-right: 0;
     border-bottom: 1px solid rgba(37, 54, 42, 0.12);
   }
 
   .traffic-row {
-    grid-template-columns: 3rem 2.8rem 4.5rem minmax(12rem, 1fr);
+    grid-template-columns: 2.8rem 2.2rem 4rem minmax(12rem, 1fr);
   }
 }
 
 @media (min-width: 1120px) {
   .content-panel {
-    padding-left: clamp(3rem, 5.4vw, 4.75rem);
+    padding-left: clamp(1.25rem, 2.5vw, 2rem);
   }
 }
